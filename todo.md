@@ -1,23 +1,37 @@
 # behavior
-- Add food limit 
-- Add survivor limit
+- Add food limit (now is infinite)
+- Add survivor limit (now is infinite)
 - include turning speed operator (not used today)
 - include braveness for survivors
-- survivors want to reproduce when they are with energy
+- include elitism factor (in chromosome)
+- survivors want to reproduce when they are not eating or escaping
+
 
 #new stuffs
 - show stats of each survivor when keypress 
++ Show vision range toogle (spacebar) 
 - show stats of specific survivor (mouse click)
 - add will model
 - add complexity to the world (and a brain for each creature)
+- add bird flock behavior based on dna compatibility
+- add creatures visual relations viewer (parents, childrens, best performers, fuckers) (lines / colors don't know)
+- add intro and basic info
+- add background music
+- add particle effects when someone is fucking
 
 # bugs
-- Fixed - new childrens are not shown in scene  (ok)
++ Fixed - new childrens are not shown in scene  (ok)
 - 
 
 #refactor
-- Add Predator to factory (ok)
-- Add Food class (ok)
-- improve fps when 50+ survivors are on screen (ok)
-- Repair predator eat logic when survivor is dead (ok)
-- Bundle this using webpack
++ Add Predator to factory (ok)
++ Add SpriteFactory (ok)
++ Add Food class (ok)
++ improve fps when 50+ survivors are on screen (ok)
++ Repair predator eat logic when survivor is dead (ok)
+- Bundle .js using webpack
+- extend Background scrolling loop
+- allow resize world in browser
+- detect mobile browser
+- add survivor and predator sprite to factory 
+- review CustomSprite superclass (empty class)
