@@ -1,16 +1,21 @@
-const predatorSprite = {
+class PredatorSprite extends CustomSprite {
 
-  appScreenWidth: 0,
-  appScreenHeight: 0,
+  constructor(opt) {
+    super(opt);
+    this.appScreenWidth;
+    this.appScreenHeight;
+    this.init(opt);
+  }
 
-  Init(screenWidth, screenHeight) {
+  init(opt) {
     this.sprite = new PIXI.Sprite.fromImage('/img/predator.png');
-    this.appScreenWidth = screenWidth;
-    this.appScreenHeight = screenHeight;
+    this.appScreenWidth = opt.screenWidth;
+    this.appScreenHeight = opt.screenHeight;
     this.setParameters();
     this.setBehavior();
+    this.idx = opt.i;
     return this.sprite;
-  },
+  };
 
   setParameters() {
     this.sprite.anchor.set(0.5);
@@ -21,7 +26,7 @@ const predatorSprite = {
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
-  },
+  };
 
   setBehavior() {
 
@@ -65,7 +70,7 @@ const predatorSprite = {
       return direction;
     }
 
-  },
+  };
 
   getBounds() {
     let dudeBoundsPadding = 150;
@@ -74,6 +79,6 @@ const predatorSprite = {
       -dudeBoundsPadding,
       this.appScreenWidth + dudeBoundsPadding * 2,
       this.appScreenHeight + dudeBoundsPadding * 2);
-  }
+  };
 
 }

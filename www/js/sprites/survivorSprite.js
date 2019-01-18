@@ -1,9 +1,13 @@
-const survivorSprite = {
+class SurvivorSprite extends CustomSprite {
 
-  appScreenWidth: 0,
-  appScreenHeight: 0,
+  constructor(opt) {
+    super(opt);
+    this.appScreenWidth;
+    this.appScreenHeight;
+    this.init(opt);
+  }
 
-  Init(screenWidth, screenHeight) {
+  init(opt) {
 
     /*
     let graphics = new PIXI.Graphics;
@@ -21,23 +25,23 @@ const survivorSprite = {
     */
 
     this.sprite = new PIXI.Sprite.fromImage('/img/trail.png'),
-      this.appScreenWidth = screenWidth;
-    this.appScreenHeight = screenHeight;
+      this.appScreenWidth = opt.screenWidth;
+    this.appScreenHeight = opt.screenHeight;
+    this.idx = opt.i;
     this.setParameters();
     this.setBehavior();
-    return this.sprite;
-  },
+  }
 
   setParameters() {
     this.sprite.anchor.set(0.5);
     this.sprite.scale.set(0.2);
     this.sprite.dudeBounds = this.getBounds();
-    this.sprite.tint = Constants.colors.BLUE;
+    //this.sprite.tint = Constants.colors.BLUE;
     this.sprite.direction = Math.random() * Math.PI * 2;
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
-  },
+  }
 
   setBehavior() {
 
@@ -81,7 +85,7 @@ const survivorSprite = {
       return direction;
     }
 
-  },
+  }
 
   getBounds() {
     let dudeBoundsPadding = 150;

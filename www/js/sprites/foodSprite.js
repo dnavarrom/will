@@ -53,8 +53,4 @@ class FoodSprite extends CustomSprite {
     return foodBounds;
   }
 
-  getSprite() {
-    return this.sprite;
-  }
-
 }

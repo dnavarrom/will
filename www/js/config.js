@@ -2,7 +2,7 @@
 var config = {
   app: {
     width: 1024,
-    height: 768,
+    height: 600,
     visual: {
       bgcolor: "0X022a31"
     }

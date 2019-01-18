@@ -1,11 +1,10 @@
-
 let Application = PIXI.Application,
   Container = PIXI.Container,
   loader = PIXI.loader,
   resources = PIXI.loader.resources,
   TextureCache = PIXI.utils.TextureCache,
   Rectangle = PIXI.Rectangle;
-UiTextInfo = PIXI.Text; 
+UiTextInfo = PIXI.Text;
 
 let state;
 let b = new Bump(PIXI);
@@ -25,6 +24,8 @@ var app = new PIXI.Application({
 CreatureFactory.register("Survivor", Survivor);
 CreatureFactory.register("Predator", Predator);
 SpriteFactory.register("FoodSprite", FoodSprite);
+SpriteFactory.register("PredatorSprite", PredatorSprite);
+SpriteFactory.register("SurvivorSprite", SurvivorSprite);
 
 console.log("PARAMETERS");
 console.log("==========");
@@ -70,7 +71,7 @@ var iteration = 0;
 var GenerationLimit = config.evolution.generationLimit;
 
 //animation-background
-var switchDirection = 1;  //to change background scrolling direction
+var switchDirection = 1; //to change background scrolling direction
 
 //debug mode
 var debugModeOn = false;
@@ -185,10 +186,10 @@ function gameLoop(delta) {
       evaluateGeneration();
       iteration = 0;
       //TODO : cambiar esto, lo estoy usando para retroceder el background, un poco fucker.
-      if (iteration % 10 === 0) {
+      if (iteration % 50 === 0) {
         switchDirection *= -1;
       }
-      
+
     }
   }
 
@@ -532,10 +533,14 @@ function InitPredators(numSprites, population) {
       PIXI: PIXI,
       dna: population[i],
       i: i,
-      sprite: predatorSprite.Init(app.screen.width, app.screen.height)
+      //sprite: predatorSprite.Init(app.screen.width, app.screen.height)
+      sprite: SpriteFactory.create("PredatorSprite", { screenWidth: app.screen.width, screenHeight: app.screen.height,
+          i: i })
+        .getSprite()
     }
 
     let p = CreatureFactory.create("Predator", opt);
+    console.log(p.collectStats());
 
     // finally we push the sprite into the survivors array so it it can be easily accessed later
     predatorsInfo.push(p);
@@ -564,7 +569,10 @@ function InitSurvivors(numSprites, population) {
       PIXI: PIXI,
       dna: population[i],
       i: i,
-      sprite: survivorSprite.Init(app.screen.width, app.screen.height)
+      //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
+      sprite: SpriteFactory.create("SurvivorSprite", { screenWidth: app.screen.width, screenHeight: app.screen.height,
+          i: i })
+        .getSprite()
     }
 
     let p = CreatureFactory.create("Survivor", opt);
@@ -591,7 +599,10 @@ function CreateNewSurvivors(population) {
       PIXI: PIXI,
       dna: population[i],
       i: survivorsInfo.length,
-      sprite: survivorSprite.Init(app.screen.width, app.screen.height)
+      //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
+      sprite: SpriteFactory.create("SurvivorSprite", { screenWidth: app.screen.width, screenHeight: app.screen.height,
+          i: survivorsInfo.length })
+        .getSprite()
     }
 
     let p = CreatureFactory.create("Survivor", opt);

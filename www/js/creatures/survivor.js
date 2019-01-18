@@ -74,7 +74,7 @@ class Survivor extends Creature {
     var mateFound = 0;
     var angle = 0;
 
-    if (this.energy > this.maxEnergy / 2)
+    if (this.energy > this.maxEnergy / 2 && this.isDodging == false)
       this.isFindingMate = true;
     else
       this.isFindingMate = false;

@@ -7,6 +7,7 @@ class Predator extends Creature {
     this.numCrittersEated = 0;
     this.creatureType = Constants.creatureTypes.PREDATOR;
     this.livingTimeLimit = config.creature.livingTimeLimit * 3; //they live more
+    this.speed = this.speed * 1.5 //they are faster
 
     this.collectStats();
 
@@ -24,10 +25,10 @@ class Predator extends Creature {
     let survivorFound = 0;
 
     for (let i = 0, len = survivorsInfo.length; i < len; i++) {
-      let dist = helper.CheckDistanceBetweenSprites(this.sprite, survivorsInfo[i]);
+      let dist = helper.CheckDistanceBetweenSprites(this.sprite, survivorsInfo[i].sprite);
       if (nearestSurvivorDistance > dist.distance) {
-        if (dist.distance < this.sprite.visionRange &&
-          !survivorsInfo[i].IsDead) {
+        if (dist.distance < this.visionRange &&
+          !survivorsInfo[i].isDead) {
           nearestSurvivorDistance = dist.distance;
           nearestSurvivorUid = survivorsInfo[i].uid;
           angle = dist.angle;
@@ -37,12 +38,12 @@ class Predator extends Creature {
     }
 
     if (survivorFound == 0) {
-      this.sprite.isBlind = true;
+      this.isBlind = true;
     } else {
       this.sprite.nearestSurvivorDistance = nearestSurvivorDistance;
       this.sprite.nearestSurvivorUid = nearestSurvivorUid;
       this.setDirection(angle);
-      this.sprite.isBlind = false;
+      this.isBlind = false;
     }
   }
 

@@ -26,12 +26,12 @@
 #refactor
 + Add Predator to factory (ok)
 + Add SpriteFactory (ok)
-+ Add Food class (ok)
++ Add Food class to factory(ok)
++ Add Survivor class to factory (ok)
 + improve fps when 50+ survivors are on screen (ok)
 + Repair predator eat logic when survivor is dead (ok)
 - Bundle .js using webpack
-- extend Background scrolling loop
+- extend Background scrolling loop (ok - testing)
 - allow resize world in browser
 - detect mobile browser
-- add survivor and predator sprite to factory 
 - review CustomSprite superclass (empty class)

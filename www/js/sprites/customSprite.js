@@ -1,5 +1,9 @@
 class CustomSprite {
-    constructor(opt) {
+  constructor(opt) {
 
-    }
+  }
+
+  getSprite() {
+    return this.sprite;
+  }
 }
