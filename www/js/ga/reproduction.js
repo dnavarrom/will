@@ -9,7 +9,8 @@ class Reproduction
             visionRange : 0,
             turningSpeed : 0,
             maxEnergy : 0,
-            fertility : 0
+            fertility : 0,
+            braveness : 0
         };
 
         this.parent1 = parent1;
@@ -84,6 +85,15 @@ class Reproduction
         {
             this.child.fertility = this.parent2.fertility;
         }
+
+        //braveness
+        if (Math.random() > config.evolution.geneticOperators.specificGeneCrossoverRate) {
+            this.child.braveness = this.parent1.braveness;
+        }
+        else
+        {
+            this.child.braveness = this.parent2.braveness;
+        }
     }
 
     Mutate() {
@@ -92,6 +102,8 @@ class Reproduction
         this.child.visionRange === Math.random() < go.specificGeneMutationRate ? helper.generateRandomInteger(50,100) : this.child.visionRange;
         this.child.turningSpeed === Math.random() < go.specificGeneMutationRate ? Math.abs(Math.random(1) - 0.8) : this.child.turningSpeed;
         this.child.maxEnergy === Math.random() < go.specificGeneMutationRate ? helper.generateRandomInteger(1,10) : this.child.maxEnergy;
+        //TODO: why i'm not mutating fertility?
+        this.child.braveness === Math.random() < go.specificGeneMutationRate ? Math.random(1) : this.child.braveness;
     }
 
 

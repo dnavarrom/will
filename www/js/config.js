@@ -8,10 +8,14 @@ var config = {
     }
   },
   world: {
-    food: 30,
+    food: 70,
     predators: 1,
-    survivors: 15,
-    maxFoodGenerationRatio: 10
+    survivors: 25,
+    maxFoodGenerationRatio: 25,
+    maxFood : 150,
+    maxSurvivors : 70,
+    maxPredators : 3
+
   },
   evolution: {
     generationLimit: 10,
@@ -23,10 +27,12 @@ var config = {
     }
   },
   creature: {
-    adultAge: 2,
-    elderAge: 5,
-    livingTimeLimit: 6
-
-  }
-
+    adultAge: 3,
+    elderAge: 7,
+    livingTimeLimit: 10,
+    minVisionRange : 50,
+    maxVisionRange : 200,
+    maxEnergy : 10
+  },
+  debugMode : false
 }

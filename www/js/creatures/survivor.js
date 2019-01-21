@@ -98,11 +98,11 @@ class Survivor extends Creature {
 
       var objResult = {
         canReproduce: false,
-        partnerIdx: -1
+        partnerUid: -1
       };
 
       if (mateFound > 0) {
-        let survivor = survivorsInfo.find(o => o.uid == nearestSurvivorUid);
+        let survivor =  survivorInfo.find(o => o.uid == nearestSurvivorUid);
 
         if (this.checkReproductionConditions(survivor)) {
           this.nearestSurvivorDistance = nearestSurvivorDistance;
@@ -238,39 +238,19 @@ class Survivor extends Creature {
 
   /**
    * Change direction to evade predators (if they in vision Range)
-   * @param predator : array of food objects 
+   * @param predator : predator info
    */
   evadePredator(predator) {
-
-    //si el worm choca con los limites lo dirijo hacia otro lado
-    let evalSprite = {
-      x: this.x,
-      y: this.y,
-      width: this.sprite.width,
-      height: this.sprite.height
-    }
-
-    let evalPredator = {
-      x: predator.x,
-      y: predator.y,
-      width: predator.width,
-      height: predator.height
-    }
-
-    let centerScreen = {
-      x: this.sprite.appScreenWidth / 2,
-      y: this.sprite.appScreenHeight / 2
-    }
-
-    let dist = helper.CheckDistanceBetweenSprites(evalSprite, evalPredator);
+    let dist = helper.CheckDistanceBetweenSprites(this.sprite, predator.sprite);
     if (dist.distance < this.visionRange) {
-      if (!this.isDodging) {
-        this.setDirection(predator.direction - 90);
+      if (this.isDodging == false) {
+        this.setDirection(predator.direction + predator.direction*Math.random(30,60));
         this.isDodging = true;
-        //this.sprite.tint = 0x000ff;
+        //this.sprite.tint = Constants.colors.BLUE;
       }
     } else {
       this.isDodging = false;
+      //this.sprite.tint = Constants.colors.WHITE;
     }
   };
 

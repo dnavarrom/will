@@ -24,8 +24,9 @@ class SurvivorSprite extends CustomSprite {
     this.setBehavior();
     */
 
-    this.sprite = new PIXI.Sprite.fromImage('/img/trail.png'),
-      this.appScreenWidth = opt.screenWidth;
+    //this.sprite = new PIXI.Sprite.fromImage('/img/trail.png'),
+    this.sprite = new PIXI.Sprite(PIXI.loader.resources["img/trail.png"].texture);
+    this.appScreenWidth = opt.screenWidth;
     this.appScreenHeight = opt.screenHeight;
     this.idx = opt.i;
     this.setParameters();

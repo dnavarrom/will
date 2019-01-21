@@ -12,8 +12,17 @@ const Constants = {
   colors: {
     RED: 0xf91800,
     BLUE: 0x000ff,
+    BLUEYALE : 0x0E4D92,
     GREY: 0xb6b6ba,
+    DARKGREY: 0x313335,
     WHITE: 0XFFFFFF,
-    GREEN: 0x00FF00
+    GREEN: 0x00FF00,
+    ORANGE : 0xFC6600
+  },
+  simulationStates : {
+    RUN : "run",
+    SPLASH : "splash",
+    STOPPED : "stopped",
+    ROTATION : "rotation"
   }
 }

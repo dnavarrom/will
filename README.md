@@ -1,5 +1,13 @@
 # will
 
+### Dev environment setup
+
+Install node + npm (linux)
+
+```
+https://gist.github.com/dnavarrom/0b7c1e23d381269aa0a2870d51ff37b9
+```
+
 ### Install grunt and build dependencies
 
 ```
@@ -19,6 +27,6 @@ open http://localhost:9000
 
 ### Debug
 
-Install Debugger for Chrome (Ctrl+Shift+X) Debugger for Chrome
+Visual Studio Code : Install Debugger for Chrome (Ctrl+Shift+X) Debugger for Chrome
 
 

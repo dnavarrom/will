@@ -8,7 +8,8 @@ class PredatorSprite extends CustomSprite {
   }
 
   init(opt) {
-    this.sprite = new PIXI.Sprite.fromImage('/img/predator.png');
+    //this.sprite = new PIXI.Sprite.fromImage('/img/predator.png');
+    this.sprite = new PIXI.Sprite(PIXI.loader.resources["img/predator.png"].texture)
     this.appScreenWidth = opt.screenWidth;
     this.appScreenHeight = opt.screenHeight;
     this.setParameters();

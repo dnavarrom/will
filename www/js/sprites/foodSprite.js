@@ -10,11 +10,14 @@ class FoodSprite extends CustomSprite {
 
   init(screenWidth, screenHeight, i) {
 
-    this.sprite = new PIXI.Sprite.fromImage('/img/star.png', true),
-      this.appScreenWidth = screenWidth;
+    //this.sprite = new PIXI.Sprite.fromImage('/img/star.png', true),
+    this.sprite = new PIXI.Sprite(PIXI.loader.resources["img/star.png"].texture)
+    this.appScreenWidth = screenWidth;
     this.appScreenHeight = screenHeight;
     this.idx = i;
     this.sprite.idx = i;
+    this.uid = helper.generateGuid();
+    this.sprite.uid = this.uid;
     this.setParameters();
   };
 

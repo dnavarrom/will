@@ -7,7 +7,7 @@ class Predator extends Creature {
     this.numCrittersEated = 0;
     this.creatureType = Constants.creatureTypes.PREDATOR;
     this.livingTimeLimit = config.creature.livingTimeLimit * 3; //they live more
-    this.speed = this.speed * 1.5 //they are faster
+    this.speed = this.speed * 0.8; //predator are slower but bigger
 
     this.collectStats();
 

@@ -15,6 +15,9 @@ bower_components/
 # Optional npm cache directory
 .npm
 
+#temp
+package-lock.json
+
 # Optional eslint cache
 .eslintcache
 

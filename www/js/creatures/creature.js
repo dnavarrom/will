@@ -1,12 +1,12 @@
 const GenerateRandomParameters = function() {
   let parameters = {};
 
-  parameters.mass = 10;
-  parameters.visionRange = helper.generateRandomInteger(50, 100);
-  parameters.maxEnergy = helper.generateRandomInteger(1, 10);
+  parameters.visionRange = helper.generateRandomInteger(config.creature.minVisionRange, config.creature.maxVisionRange);
+  parameters.maxEnergy = helper.generateRandomInteger(1, config.creature.maxEnergy);
   parameters.turningSpeed = Math.random() - 0.8;
   parameters.speed = (2 + Math.random() * 2) * 0.2;
   parameters.fertility = Math.random(1);
+  parameters.braveness = Math.random(1);
 
   //console.log(parameters);
 
@@ -28,6 +28,10 @@ class Creature {
     this.sprite.idx = this.idx;
 
     //Will
+    //braveness
+    this.braveness = opt.braveness;
+    //horniness
+
 
     //dna
     if (!opt.dna) {
