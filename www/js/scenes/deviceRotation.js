@@ -4,7 +4,7 @@ class DeviceRotation {
     this.rotateText = new PIXI.Text('Please rotate your device', {
         align: 'center',
         fill: 'rgba(255, 255, 255, .9)',
-        fontSize: 15,
+        fontSize: 30,
         fontWeight: 100,
         fontFamily: 'FuturaICG, Roboto, Tahoma, Geneva, sans-serif',
         letterSpacing: 5
@@ -34,8 +34,8 @@ class DeviceRotation {
     }
 
     showScene() {
-            this.rotateText.alpha = 0.7;
-            this.rotateScreen.alpha = 0.7;
+            this.rotateText.alpha = 0.9;
+            this.rotateScreen.alpha = 0.9;
     }
 
     hideScene () {

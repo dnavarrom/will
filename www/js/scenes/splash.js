@@ -38,8 +38,8 @@ class Splash {
     }
 
     showScene() {
-            this.splashText.alpha = 0.7;
-            this.startText.alpha = 0.7;
+            this.splashText.alpha = 0.9;
+            this.startText.alpha = 0.9;
     }
 
     hideScene () {

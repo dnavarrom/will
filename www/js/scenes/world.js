@@ -95,6 +95,22 @@ class World {
     this.loadFood(this.totalFood);
   }
 
+  showScene() {
+    for (var key in this.containers) {
+      if (this.containers.hasOwnProperty(key)) {
+        this.containers[key].alpha = 1;
+      }
+    }
+  }
+
+  hideScene() {
+    for (var key in this.containers) {
+      if (this.containers.hasOwnProperty(key)) {
+        this.containers[key].alpha = 0;
+      }
+    }
+  }
+
   /**
    * Generate food objects (both PIXI sprites and Food attributes)
    * @param {*} numSprites config.world.food  
@@ -362,7 +378,7 @@ class World {
   }
 
   clearChildrenTreeLine(survivor) {
-    let currentLine = this.targetMateLineInfo.find(o=>o.uid == survivor.uid);
+    let currentLine = this.targetMateLineInfo.find(o => o.uid == survivor.uid);
     if (currentLine) {
       currentLine.clear();
       this.targetMateLineContainer.removeChild(currentLine);
@@ -421,7 +437,7 @@ class World {
               food.eated = true;
               this.foodContainer.removeChild(food);
               //this.foodInfo.splice(food.idx, 1);
-              this.foodInfo = this.foodInfo.filter(o=>o.uid !== food.uid);
+              this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
               this.survivorsInfo[i].eat();
               //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
             }

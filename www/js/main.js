@@ -4,10 +4,7 @@ let Application = PIXI.Application,
   resources = PIXI.loader.resources,
   TextureCache = PIXI.utils.TextureCache,
   Rectangle = PIXI.Rectangle;
-UiTextInfo = PIXI.Text;
-
-let state;
-var currentSimulationState = Constants.simulationStates.STOPPED;
+//UiTextInfo = PIXI.Text;
 
 let b = new Bump(PIXI);
 let helper = new Helpers();
@@ -49,8 +46,11 @@ console.log(app.screen.height);
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild(app.renderer.view);
 
+//States
+let state;
+let stateManager;
+
 //Scenes
-var uiTextInfo; //Entregar status
 var tilingSprite; //movimiento del fondo de pantalla
 var splashScreen; //container
 var deviceRotationScreen; //container
@@ -98,8 +98,6 @@ loader
  */
 function setup() {
 
-  currentSimulationState = Constants.simulationStates.STOPPED;
-
   let texture = PIXI.loader.resources["img/background-9.jpeg"].texture;
   tilingSprite = new PIXI.extras.TilingSprite(
     texture,
@@ -119,12 +117,28 @@ function setup() {
   //Scene 2 : Main Simulation
   world = new World(app, b);
 
+  //Scene 3: UI information
+  inGameInformation = new InGameInformation(app);
+
+  //Collect Scenes:
+  let opt = {
+    scenes: {
+      world: world,
+      splash: splashScreen,
+      rotation: deviceRotationScreen,
+      inGameInformation : inGameInformation
+    }
+  }
+
+  stateManager = new StateManager(opt);
+
   //Detect device orientation (mobile only)
   if (isMobile.any && window.orientation != 90) {
     state = deviceRotation;
   } else {
     state = splash; //run function
   }
+
 
   app.ticker.add(delta => gameLoop(delta));
 
@@ -135,14 +149,7 @@ function setup() {
  */
 function initWorld() {
 
-  currentSimulationState = Constants.simulationStates.RUN;
   world.init();
-
-  //Show stats
-  LoadUiInformation();
-  app.stage.addChild(uiTextInfo);
-
-  splashScreen.removeScene(app);
 
   state = run;
 
@@ -154,7 +161,7 @@ function initWorld() {
  */
 function run(delta) {
 
-  currentSimulationState = Constants.simulationStates.RUN;
+  stateManager.setState(Constants.simulationStates.RUN);
 
   // iterate through the survivors and find food, move, dodge, reproduce
   world.processSurvivor();
@@ -172,7 +179,7 @@ function run(delta) {
     if (iteration > GenerationLimit) {
       evaluateGeneration();
       iteration = 0;
-      
+
       //Regenerate Food
       world.loadFood(helper.generateRandomInteger(0, config.world.maxFoodGenerationRatio));
 
@@ -192,10 +199,13 @@ function run(delta) {
 
   //Update UI
   let generationNumber = generationStats.length;
-  UpdateUI(world.survivorsInfo.length, world.predatorsInfo.length, world.foodInfo.length,
+
+  inGameInformation.updateUi(world.survivorsInfo.length, world.predatorsInfo.length, world.foodInfo.length,
     iteration, generationNumber,
     generationStats[
-      generationNumber - 1]);
+      generationNumber - 1], app.ticker.FPS);
+
+  //Update debug information
   world.updateDebugInfo();
 
   //move background
@@ -261,30 +271,6 @@ function evaluateGeneration() {
 
 }
 
-function LoadUiInformation() {
-  //UI Information
-  uiTextInfo = new UiTextInfo("#Food : " + totalFood + " - #Objects : " + totalSurvivors + " - #Predators: " +
-    totalPredators, {
-      fontWeight: 'bold',
-      //fontStyle: 'italic',
-      fontSize: 17,
-      //fontFamily: 'Arvo',
-      fill: '#FFFFFF',
-      align: 'center',
-      //stroke: '#a4410e',
-      strokeThickness: 2
-    });
-
-  uiTextInfo.x = app.screen.width / 2;
-  uiTextInfo.y = app.screen.height - 30;
-  uiTextInfo.anchor.x = 0.5;
-}
-
-function UpdateUI(sprites, predators, food, iteration, generationNumber, generationStats) {
-  uiTextInfo.text = "Generation N° : " + generationNumber + " - Iteration N° : " + iteration +
-    " - Best Generation Fitness : " + generationStats.BestFitness + " - [ #Food : " + food + " - #Survivors : " +
-    sprites + " - #Predators: " + predators + " ] - FPS : " + Math.round(app.ticker.FPS);
-}
 
 function showLineage() {
   for (let i = 0; i < world.survivorsInfo.length; i++) {
@@ -297,17 +283,12 @@ function showLineage() {
 }
 
 function deviceRotation(delta) {
-  currentSimulationState = Constants.simulationStates.ROTATION;
+  stateManager.setState(Constants.simulationStates.ROTATION);
   moveBackground();
-  splashScreen.hideScene();
-  deviceRotationScreen.showScene();
 }
 
 function splash(delta) {
-  currentSimulationState = Constants.simulationStates.SPLASH;
-  deviceRotationScreen.hideScene();
-  splashScreen.showScene();
-  //background movement
+  stateManager.setState(Constants.simulationStates.SPLASH);
   moveBackground();
 }
 
@@ -315,7 +296,6 @@ function moveBackground() {
   tilingSprite.tilePosition.x -= 0.1 * switchDirection;
   tilingSprite.tilePosition.y -= 0.1 * switchDirection;
 }
-
 
 function updateChildrenTreeLine(survivor, targetSurvivor) {
   //Circle
@@ -331,8 +311,6 @@ function updateChildrenTreeLine(survivor, targetSurvivor) {
   }
 }
 
-
-
 function onKeyDown(key) {
 
   if (key.keyCode === 32) {
@@ -340,13 +318,13 @@ function onKeyDown(key) {
   }
 
   if (key.keyCode === 13) {
-    if (currentSimulationState != Constants.simulationStates.RUN)
+    if (stateManager.getCurrentState() != Constants.simulationStates.RUN)
       state = initWorld;
   }
 }
 
 function onStartTextClick() {
-  if (currentSimulationState != Constants.simulationStates.RUN)
+  if (stateManager.getCurrentState() != Constants.simulationStates.RUN)
     state = initWorld;
 }
 
@@ -355,35 +333,51 @@ function resizeMe() {
   tilingSprite.width = window.innerWidth;
   tilingSprite.height = window.innerHeight;
   splashScreen.setPosition(window.innerWidth, window.innerHeight);
-  if (uiTextInfo) {
-    uiTextInfo.x = window.innerWidth / 2;
-    uiTextInfo.y = window.innerHeight - 30;
-  }
+  deviceRotationScreen.setPosition(window.innerWidth, window.innerHeight);
+  if (inGameInformation)
+    inGameInformation.setPosition(window.innerWidth, window.innerHeight);
 }
 
 function readDeviceOrientation() {
 
-  switch (currentSimulationState) {
+  switch (stateManager.getCurrentState()) {
     case Constants.simulationStates.ROTATION:
+      if (Math.abs(window.orientation) === 90) {
+        if (stateManager.getLastState() == Constants.simulationStates.RUN)
+          state = run;
+        else
+          state = splash;
+      } else {
+        state = deviceRotation;
+      }
+      break;
+
+    case Constants.simulationStates.STOPPED:
       if (Math.abs(window.orientation) === 90) {
         state = splash;
       } else {
         state = deviceRotation;
       }
+      break;
+
+    case Constants.simulationStates.RUN:
+      if (Math.abs(window.orientation) === 90) {
+        state = run;
+      } else {
+        state = deviceRotation;
+      }
+      break;
+
+    case Constants.simulationStates.SPLASH:
+      if (Math.abs(window.orientation) === 90) {
+        state = splash;
+      } else {
+        state = deviceRotation;
+      }
+      break;
+
   }
 
-  if (Math.abs(window.orientation) === 90) {
-    if (currentSimulationState == Constants.simulationStates.ROTATION ||
-      currentSimulationState == Constants.simulationStates.STOPPED) {
-      state = splash;
-    }
-
-    if (currentSimulationState == Constants.simulationStates.RUN) {
-      state = run;
-    }
-  } else {
-    state = deviceRotation;
-  }
 }
 
 document.addEventListener('keydown', onKeyDown);
