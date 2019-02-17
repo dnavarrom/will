@@ -15,6 +15,7 @@ const Constants = {
     BLUEYALE : 0x0E4D92,
     GREY: 0xb6b6ba,
     DARKGREY: 0x313335,
+    LIGHTGREY: 0xD3D3D3,
     WHITE: 0XFFFFFF,
     GREEN: 0x00FF00,
     ORANGE : 0xFC6600

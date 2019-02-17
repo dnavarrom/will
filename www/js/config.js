@@ -1,17 +1,18 @@
 /* eslint-disable */
 var config = {
   app: {
-    width: 1024,
+    width: 800,
     height: 600,
+    autoSize: true,
     visual: {
       bgcolor: "0X022a31"
     }
   },
   world: {
-    food: 70,
+    food: 100,
     predators: 1,
-    survivors: 25,
-    maxFoodGenerationRatio: 25,
+    survivors: 45,
+    maxFoodGenerationRatio: 80,
     maxFood : 150,
     maxSurvivors : 70,
     maxPredators : 3
@@ -27,9 +28,9 @@ var config = {
     }
   },
   creature: {
-    adultAge: 3,
-    elderAge: 7,
-    livingTimeLimit: 10,
+    adultAge: 5,
+    elderAge: 10,
+    livingTimeLimit: 15,
     minVisionRange : 50,
     maxVisionRange : 200,
     maxEnergy : 10

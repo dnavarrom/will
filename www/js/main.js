@@ -16,9 +16,21 @@ let resolution = (isMobile.any == true &&
     isMobile.apple.tablet == true ||
     isMobile.apple.device == true)) ? 2 : 1;
 
+let appWidth, appHeight;
+if (config.app.autoSize) {
+  appWidth = window.innerWidth;
+  appHeight = window.innerHeight;
+}
+else
+{
+  appWidth = config.app.width;
+  appHeight = config.app.height;
+}
+
+
 var app = new PIXI.Application({
-  width: window.innerWidth, //config.app.width, //800,//1600,
-  height: window.innerHeight, //config.app.height, //600,//900,
+  width: appWidth, //config.app.width, //800,//1600,
+  height: appHeight, //config.app.height, //600,//900,
   antialias: true, // default: false
   transparent: false, // default: false
   resolution: resolution, // default: 1
@@ -56,6 +68,7 @@ var splashScreen; //container
 var deviceRotationScreen; //container
 var world;
 var inGameInformation;
+var uiControls;
 
 // global : create an array to store all the sprites
 //var world.worldInfo.survivorsInfo = [];
@@ -91,6 +104,7 @@ loader
   .add("img/trail.png")
   .add("img/background-9.jpeg")
   .add("img/icons/rotate-screen-48.png")
+  .add("img/icons/baseline_add_circle_outline_white_48dp.png")
   .load(setup);
 
 /************************
@@ -104,6 +118,7 @@ function setup() {
     app.screen.width,
     app.screen.height
   );
+  
   app.stage.addChild(tilingSprite);
 
   //Scene 0 : to rotate device (optional)
@@ -120,13 +135,17 @@ function setup() {
   //Scene 3: UI information
   inGameInformation = new InGameInformation(app);
 
+  //Scene 4: UI Controls
+  uiControls = new UiControls(app);
+
   //Collect Scenes:
   let opt = {
     scenes: {
       world: world,
       splash: splashScreen,
       rotation: deviceRotationScreen,
-      inGameInformation : inGameInformation
+      inGameInformation : inGameInformation,
+      uiControls : uiControls
     }
   }
 
@@ -195,7 +214,7 @@ function run(delta) {
   }
 
   //Show Lineage (chilrens)
-  showLineage();
+  world.showLineage();
 
   //Update UI
   let generationNumber = generationStats.length;
@@ -207,6 +226,7 @@ function run(delta) {
 
   //Update debug information
   world.updateDebugInfo();
+  world.updateCreatureHudInformation();
 
   //move background
   tilingSprite.tilePosition.x -= 0.1 * switchDirection;
@@ -272,15 +292,7 @@ function evaluateGeneration() {
 }
 
 
-function showLineage() {
-  for (let i = 0; i < world.survivorsInfo.length; i++) {
-    for (let j = 0; j < world.survivorsInfo[i].childrens.length; j++) {
-      let childrenObj = world.survivorsInfo.find(o => o.uid == world.survivorsInfo[i].childrens[j]);
-      if (childrenObj)
-        updateChildrenTreeLine(world.survivorsInfo[i].sprite, childrenObj.sprite);
-    }
-  }
-}
+
 
 function deviceRotation(delta) {
   stateManager.setState(Constants.simulationStates.ROTATION);
@@ -297,19 +309,7 @@ function moveBackground() {
   tilingSprite.tilePosition.y -= 0.1 * switchDirection;
 }
 
-function updateChildrenTreeLine(survivor, targetSurvivor) {
-  //Circle
-  let currentLine = world.targetMateLineInfo.find(o => o.uid == survivor.uid);
-  if (currentLine) {
-    currentLine.clear();
-    //currentLine.position.set(survivor.x, survivor.y);
-    currentLine.lineStyle(1, Constants.colors.BLUE, 1)
-      .moveTo(survivor.x, survivor.y)
-      .lineTo(targetSurvivor.x, targetSurvivor.y);
-    currentLine.beginFill(0.2);
-    currentLine.endFill();
-  }
-}
+
 
 function onKeyDown(key) {
 
@@ -329,13 +329,13 @@ function onStartTextClick() {
 }
 
 function resizeMe() {
-  app.renderer.resize(window.innerWidth, window.innerHeight);
-  tilingSprite.width = window.innerWidth;
-  tilingSprite.height = window.innerHeight;
-  splashScreen.setPosition(window.innerWidth, window.innerHeight);
-  deviceRotationScreen.setPosition(window.innerWidth, window.innerHeight);
+  app.renderer.resize(appWidth, appHeight);
+  tilingSprite.width = appWidth;
+  tilingSprite.height = appHeight;
+  splashScreen.setPosition(appWidth, appHeight);
+  deviceRotationScreen.setPosition(appWidth, appHeight);
   if (inGameInformation)
-    inGameInformation.setPosition(window.innerWidth, window.innerHeight);
+    inGameInformation.setPosition(appWidth, appHeight);
 }
 
 function readDeviceOrientation() {

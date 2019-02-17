@@ -10,16 +10,12 @@ class Reproduction
             turningSpeed : 0,
             maxEnergy : 0,
             fertility : 0,
+            copulingDistance : 0,
             braveness : 0
         };
 
         this.parent1 = parent1;
         this.parent2 = parent2;
-
-        console.log("PARENT1 Chromosome");
-        console.dir(this.parent1);
-        console.log("PARENT2 Chromosome");
-        console.dir(this.parent2);
     }
 
     Evolve() {
@@ -86,6 +82,15 @@ class Reproduction
             this.child.fertility = this.parent2.fertility;
         }
 
+        //Copuling Distance
+        if (Math.random() > config.evolution.geneticOperators.specificGeneCrossoverRate) {
+            this.child.copulingDistance = this.parent1.copulingDistance;
+        }
+        else
+        {
+            this.child.copulingDistance = this.parent2.copulingDistance;
+        }
+
         //braveness
         if (Math.random() > config.evolution.geneticOperators.specificGeneCrossoverRate) {
             this.child.braveness = this.parent1.braveness;
@@ -103,6 +108,7 @@ class Reproduction
         this.child.turningSpeed === Math.random() < go.specificGeneMutationRate ? Math.abs(Math.random(1) - 0.8) : this.child.turningSpeed;
         this.child.maxEnergy === Math.random() < go.specificGeneMutationRate ? helper.generateRandomInteger(1,10) : this.child.maxEnergy;
         //TODO: why i'm not mutating fertility?
+        this.child.copulingDistance === Math.random() < go.specificGeneMutationRate ? helper.generateRandomInteger(10,50) : this.child.copulingDistance;
         this.child.braveness === Math.random() < go.specificGeneMutationRate ? Math.random(1) : this.child.braveness;
     }
 

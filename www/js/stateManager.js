@@ -17,6 +17,7 @@ class StateManager {
                     this.scenes.splash.hideScene();
                     this.scenes.rotation.hideScene();
                     this.scenes.inGameInformation.hideScene();
+                    this.scenes.uiControls.hideScene();
                     break;
 
                 case Constants.simulationStates.RUN:
@@ -24,6 +25,7 @@ class StateManager {
                     this.scenes.splash.hideScene();
                     this.scenes.rotation.hideScene();
                     this.scenes.inGameInformation.showScene();
+                    this.scenes.uiControls.showScene();
                     break;
 
                 case Constants.simulationStates.ROTATION:
@@ -31,6 +33,7 @@ class StateManager {
                     this.scenes.splash.hideScene();
                     this.scenes.rotation.showScene();
                     this.scenes.inGameInformation.hideScene();
+                    this.scenes.uiControls.hideScene();
                     break;
 
                 case Constants.simulationStates.SPLASH:
@@ -38,6 +41,7 @@ class StateManager {
                     this.scenes.splash.showScene();
                     this.scenes.rotation.hideScene();
                     this.scenes.inGameInformation.hideScene();
+                    this.scenes.uiControls.hideScene();
                     break;
             }
 

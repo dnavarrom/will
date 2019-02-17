@@ -64,6 +64,5 @@ class InGameInformation {
     this.uiTextInfo.x = width / 2;
     this.uiTextInfo.y = height - 30;
     
-
-}
+  }
 }

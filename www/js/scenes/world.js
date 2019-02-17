@@ -8,6 +8,7 @@ class World {
     this.foodInfo = [];
     this.targetMateLineInfo = [];
     this.debugInfo = [];
+    this.creatureHudInfo = [];
 
     this.b = b; //bump
 
@@ -59,6 +60,15 @@ class World {
 
     app.stage.addChild(this.debugContainer);
 
+    this.creatureHudContainer = new PIXI.Container(1000, {
+      scale: true,
+      position: true,
+      rotation: true,
+      uvs: true,
+      alpha: true
+    })
+    app.stage.addChild(this.creatureHudContainer);
+
     this.targetMateLineContainer = new PIXI.Container(1000, {
       scale: true,
       position: true,
@@ -74,6 +84,7 @@ class World {
       survivorsContainer: this.survivorsContainer,
       foodContainer: this.foodContainer,
       debugContainer: this.debugContainer,
+      creatureHudContainer: this.creatureHudContainer,
       targetMateLineContainer: this.targetMateLineContainer
     };
 
@@ -83,6 +94,7 @@ class World {
       predatorsInfo: this.predatorsInfo,
       foodInfo: this.foodInfo,
       debugInfo: this.debugInfo,
+      creatureHudInfo: this.creatureHudInfo,
       targetMateLineInfo: this.targetMateLineInfo,
       deadSurvivors: this.deadSurvivors
     };
@@ -194,7 +206,7 @@ class World {
       this.predatorsInfo.push(p);
       this.predatorsContainer.addChild(p.sprite);
 
-      this.addDebugInfo(p);
+      //this.addDebugInfo(p);
 
     }
 
@@ -234,6 +246,7 @@ class World {
 
       this.addDebugInfo(p);
       this.addReproductionTargetLine(p);
+      this.addCreatureHudInformation(p);
     }
   }
 
@@ -244,9 +257,15 @@ class World {
    */
   createNewSurvivors(population) {
 
-    if (this.survivorsInfo.length >= config.world.maxSurvivors)
+    if (this.survivorsInfo.length >= config.world.maxSurvivors) {
+      this.childInfo = [];
       return;
+    }
 
+
+    console.log(population.length);
+    //TODO: Que no sean arreglos
+    
     for (var i = 0; i < population.length; i++) {
       //let p = new Survivor(PIXI).Init(this.survivorsInfo.length,population[i], app);
 
@@ -276,6 +295,7 @@ class World {
       this.childInfo = []; //clean the childs buffer
       //TODO add children to survivor
       this.addDebugInfo(p);
+      this.addCreatureHudInformation(p);
     }
   }
 
@@ -295,6 +315,28 @@ class World {
     this.debugInfo.push(img);
   }
 
+  addCreatureHudInformation(survivor) {
+    var hudTextInfo = new PIXI.Text("E: 100%", {
+      fontWeight: 'bold',
+      //fontStyle: 'italic',
+      fontSize: 10,
+      fontFamily: 'Arvo',
+      fill: '#FFFFFF',
+      align: 'left',
+      //stroke: '#a4410e',
+      strokeThickness: 1
+    });
+
+    hudTextInfo.uid = survivor.uid;
+    hudTextInfo.x = survivor.sprite.x - 20;
+    hudTextInfo.y = survivor.sprite.y - 5
+
+    this.creatureHudContainer.addChild(hudTextInfo);
+    this.creatureHudInfo.push(hudTextInfo);
+  }
+
+  
+
   addReproductionTargetLine(survivor) {
     let graph = new PIXI.Graphics();
     graph.uid = survivor.uid;
@@ -302,6 +344,26 @@ class World {
     this.targetMateLineInfo.push(graph);
 
   }
+
+  showLineage() {
+    for (let i = 0; i < this.survivorsInfo.length; i++) {
+      for (let j = 0; j < this.survivorsInfo[i].childrens.length; j++) {
+        let childrenObj = this.survivorsInfo.find(o => o.uid == this.survivorsInfo[i].childrens[j]);
+        if (childrenObj) {
+          let currentLine = this.targetMateLineInfo.find(o => o.uid == this.survivorsInfo[i].sprite.uid);
+            if (currentLine) {
+              currentLine.clear();
+              currentLine.lineStyle(1, Constants.colors.BLUE, 1)
+                .moveTo(this.survivorsInfo[i].sprite.x, this.survivorsInfo[i].sprite.y)
+                .lineTo(childrenObj.sprite.x, childrenObj.sprite.y);
+              currentLine.beginFill(0.2);
+              currentLine.endFill();
+            }
+        }
+      }
+    }
+  }
+
 
   /**
    * Process food sprites and events
@@ -349,8 +411,8 @@ class World {
       let PredatorEating = this.b.hit(
         this.predatorsInfo[i].sprite, this.survivorsInfo.map(a => a.sprite), false, false, false,
         function(collision, dude) {
-          let survivor = world.survivorsInfo.find(o => o.uid == dude.uid);
-          survivor.isDead = true;
+          let survivor = this.survivorsInfo.find(o => o.uid == dude.uid);
+          //survivor.isDead = true;
           this.killSurvivor(survivor);
           console.log("survivor #" + dude.uid + " is dead (eaten)");
           //TODO: FIX this, this.survivorsInfo is not discounting
@@ -371,9 +433,11 @@ class World {
   killSurvivor(survivor) {
     this.survivorsContainer.removeChild(survivor.sprite);
     this.debugContainer.removeChild(this.debugInfo.find(o => o.uid == survivor.uid));
+    this.creatureHudContainer.removeChild(this.creatureHudInfo.find(o => o.uid == survivor.uid));
     this.deadSurvivors.push(this.survivorsInfo.find(o => o.uid == survivor.uid));
     this.survivorsInfo = this.survivorsInfo.filter(o => o.uid !== survivor.uid)
     this.debugInfo = this.debugInfo.filter(o => o.uid !== survivor.uid);
+    this.creatureHudInfo = this.creatureHudInfo.filter(o => o.uid !== survivor.uid);
     this.clearChildrenTreeLine(survivor);
   }
 
@@ -393,30 +457,14 @@ class World {
 
       if (this.survivorsInfo[i] && !this.survivorsInfo[i].isDead) {
 
-        //look for food
-        this.survivorsInfo[i].findFood(this.foodInfo);
-        let cr;
-        if (this.survivorsInfo.length < config.world.maxSurvivors)
-          cr = this.survivorsInfo[i].findMate(this.survivorsInfo);
-        //find mate
+        this.survivorsInfo[i].getCurrentStatus();
+        this.survivorsInfo[i].checkIfCopuling();
 
-        if (cr && cr.canReproduce == true) {
-          console.log("PUEDE CULIAR " + cr.partnerUid);
-          //let partner = this.survivorsInfo.find(o=>o.uid == cr.partnerUid);
-          //partner.isCopuling = true;
-          let idx = this.survivorsInfo.map(o => o.uid)
-            .indexOf(cr.partnerUid);
-          this.survivorsInfo[idx].isCopuling = true;
-          this.survivorsInfo[i].isCopuling = true;
-          let reproduction = new Reproduction(this.survivorsInfo[i], this.survivorsInfo[idx]);
-          let son = reproduction.Evolve();
-          this.childInfo.push(son);
-          //Create Childs
-          this.createNewSurvivors(this.childInfo);
-        } else {
-          this.survivorsInfo[i].isCopuling = false;
-          //if (cr) 
-          //this.survivorsInfo[i].setDirection(cr.direction);
+        /**** 
+         * FIRST PRIORITY : Find Food and survive
+        */
+        if (!this.survivorsInfo[i].reproductionStatus.isCopuling) {
+          this.survivorsInfo[i].findFood(this.foodInfo);
         }
 
         //check for predator and change direction, it will cancel other movements
@@ -424,6 +472,69 @@ class World {
         for (let j = 0; j < this.predatorsInfo.length; j++) {
           this.survivorsInfo[i].evadePredator(this.predatorsInfo[j]);
         }
+
+        /**
+         * Second priority : reproduce 
+         */
+
+        
+
+        //during copuling
+        if (this.survivorsInfo[i].reproductionStatus.isCopuling) {
+        }
+
+        else {
+
+          
+          //after
+          if (this.survivorsInfo[i].reproductionStatus.isCopulingFinished && 
+            !this.survivorsInfo[i].reproductionStatus.isCopuling &&
+            !this.survivorsInfo[i].reproductionStatus.isFindingMate) {
+          //start to generate sons
+          let parent2 = this.survivorsInfo.find(o=>o.uid == this.survivorsInfo[i].getCurrentMate())
+          if (parent2) {
+            let son = this.survivorsInfo[i].reproduce(parent2);
+            this.childInfo.push(son);
+            this.createNewSurvivors(this.childInfo);
+          }
+          else {
+            console.log(this.survivorsInfo[i].getCurrentMate() + " no encontrado" );
+          }
+
+          //stop copuling / reset all
+          this.survivorsInfo[i].reproductionStatus.isCopulingFinished = false;
+          this.survivorsInfo[i].reproductionStatus.isCopuling = false;
+          this.survivorsInfo[i].reproductionStatus.isFindingMate = false;
+
+          }
+      }
+        
+        //find mate to reproduce
+        
+        if (this.survivorsInfo[i].reproductionStatus.isCopuling || 
+          this.survivorsInfo[i].reproductionStatus.isFindingMate){
+            let cr;
+            if (this.survivorsInfo.length < config.world.maxSurvivors)
+              cr = this.survivorsInfo[i].findMate(this.survivorsInfo);
+
+            //check if they can reproduce
+            if (cr && cr.canReproduce == true) {
+              console.log("PUEDE CULIAR " + cr.partnerUid);
+              //let partner = this.survivorsInfo.find(o=>o.uid == cr.partnerUid);
+              //partner = true;
+              let idx = this.survivorsInfo.map(o => o.uid)
+                .indexOf(cr.partnerUid);
+
+              if (this.survivorsInfo[i].reproductionStatus.isFindingMate) {
+                this.survivorsInfo[idx].startCopuling();
+                this.survivorsInfo[i].startCopuling();
+                this.survivorsInfo[idx].setCurrentMate(this.survivorsInfo[i].uid);
+                this.survivorsInfo[i].setCurrentMate(this.survivorsInfo[idx].uid);
+              }
+
+            }
+        }
+      
 
         //check for border colission and change direction
         this.survivorsInfo[i].setDirection(this.survivorsInfo[i].sprite.handleBorderCollition());
@@ -444,6 +555,8 @@ class World {
           }.bind(this)
         );
 
+      
+
         //Move
         this.survivorsInfo[i].move();
 
@@ -456,6 +569,7 @@ class World {
 
   }
 
+  //TODO : no uso estas variables.. raro lo que pensé.
   updateDebugInfo(op, survivor) {
 
     for (let i = 0; i < this.debugInfo.length; i++) {
@@ -475,6 +589,26 @@ class World {
 
     }
 
+  }
+
+  updateCreatureHudInformation() {
+    
+    for (let i = 0; i<this.creatureHudInfo.length; i++) {    
+      let surv = this.survivorsInfo.find(o=>o.uid == this.creatureHudInfo[i].uid);    
+      if (surv) {
+        this.creatureHudInfo[i].x = surv.sprite.x - 10;
+        this.creatureHudInfo[i].y = surv.sprite.y - 20;
+        this.creatureHudInfo[i].text = helper.getEnergyBar(surv.collectStats().energy);
+      }
+    }
+
+    if (debugModeOn) {
+      this.creatureHudContainer.alpha = 0.5;
+    }
+    else
+    {
+      this.creatureHudContainer.alpha = 0;
+    }
   }
 
 }

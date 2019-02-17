@@ -1,5 +1,14 @@
 # will
 
+See [this](https://dnavarrom.github.io/pages/will) website for context and additional information. 
+
+## Demo
+
+[Run Demo](https://dnavarrom.github.io/demo/will)
+
+
+## Local Setup
+
 ### Dev environment setup
 
 Install node + npm (linux)
@@ -30,3 +39,6 @@ open http://localhost:9000
 Visual Studio Code : Install Debugger for Chrome (Ctrl+Shift+X) Debugger for Chrome
 
 
+### 
+
+https://gauger.io/fonticon/
