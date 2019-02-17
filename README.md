@@ -1,6 +1,6 @@
 # will
 
-See [this](https://dnavarrom.github.io/pages/will) website for context and additional information. 
+See [this](https://dnavarrom.github.io/pages/will/will.html) website for context and additional information. 
 
 ## Demo
 
