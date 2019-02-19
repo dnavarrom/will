@@ -35,7 +35,6 @@ class Creature {
     //horniness
     this.horniness = opt.horniness;
 
-
     //dna
     if (!opt.dna) {
       opt.dna = GenerateRandomParameters();
@@ -56,9 +55,9 @@ class Creature {
     //status
 
     this.reproductionStatus = {
-      isFindingMate : false,
-      isCopuling : false,
-      isCopulingFinished : false
+      isFindingMate: false,
+      isCopuling: false,
+      isCopulingFinished: false
     }
 
     this.isBlind = false;
@@ -84,36 +83,33 @@ class Creature {
   }
 
   willExecute(opt) {
-     
-     //options: eat, dodge or reproduce
-     //priorities : survive, reproduction
-     //logic : * more vision range, more chances to survive and reproduce
-     //        * more speed, more chances to survive and reproduce
-     // alternatives: 
-     // if low energy then eat over reproduce
-     // if low energy but predator near then dodge
-     // if high energy then try to reproduce
-     // if high energy but predator near then dodge
-     // if medium energy then eat or reproduce
-     // if medium energy but predator near then eat
 
-     // will parameter:
-     // options : braveness, horniness
-     // logic: * more braveness, more risks to take, if better vision range and speed
-     //          more chances to survive and reproduce else less chances than normal
-     //        * more horniness, more risk to reproduce, if medium or low energy then
-     //        * reproduce over eat
-     // if low energy and horniness then reproduce over eat
-     // if low energy and predator near but braveness then eat over dodge
-     // if high energy then try to reproduce
-     // if high energy but predator but braveness then reproduce over dodge
-     // if medium energy then eat or reproduce
-     // if medium energy but predator near then eat
+    //options: eat, dodge or reproduce
+    //priorities : survive, reproduction
+    //logic : * more vision range, more chances to survive and reproduce
+    //        * more speed, more chances to survive and reproduce
+    // alternatives: 
+    // if low energy then eat over reproduce
+    // if low energy but predator near then dodge
+    // if high energy then try to reproduce
+    // if high energy but predator near then dodge
+    // if medium energy then eat or reproduce
+    // if medium energy but predator near then eat
 
+    // will parameter:
+    // options : braveness, horniness
+    // logic: * more braveness, more risks to take, if better vision range and speed
+    //          more chances to survive and reproduce else less chances than normal
+    //        * more horniness, more risk to reproduce, if medium or low energy then
+    //        * reproduce over eat
+    // if low energy and horniness then reproduce over eat
+    // if low energy and predator near but braveness then eat over dodge
+    // if high energy then try to reproduce
+    // if high energy but predator but braveness then reproduce over dodge
+    // if medium energy then eat or reproduce
+    // if medium energy but predator near then eat
 
   }
-
-  
 
   collectStats() {
 
@@ -121,13 +117,13 @@ class Creature {
     this.stats = {
       uid: this.uid,
       idx: this.idx,
-      livingTime : this.livingTime,
-      livingTimeLimit : this.livingTimeLimit,
+      livingTime: this.livingTime,
+      livingTimeLimit: this.livingTimeLimit,
       gender: this.gender,
       creatureType: this.creatureType,
       speed: this.speed,
       visionRange: this.visionRange,
-      copulingDistance : this.copulingDistance,
+      copulingDistance: this.copulingDistance,
       turningSpeed: this.turningSpeed,
       energy: this.energy,
       maxEnergy: this.maxEnergy,
@@ -209,7 +205,6 @@ class Creature {
   addChildren(sonUid) {
     this.childrens.push(sonUid);
   }
-
 
   getCurrentMate() {
     return this.currenMate;

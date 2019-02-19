@@ -1,5 +1,4 @@
 class Survivor extends Creature {
-
   constructor(opt) {
     super(opt);
 
@@ -67,72 +66,38 @@ class Survivor extends Creature {
   }
 
   getCurrentStatus() {
-  
+
     if (this.reproductionStatus.isCopuling) {
       this.reproductionStatus.isCopuling = true;
       this.reproductionStatus.isCopulingFinished = false;
       this.reproductionStatus.isFindingMate = false;
     }
-      
-    if (this.reproductionStatus.isCopuling == false && this.energy > this.maxEnergy / 2 && this.isDodging == false 
-      && this.livingTime >= config.creature.adultAge) {
+
+    if (this.reproductionStatus.isCopuling == false && this.energy > this.maxEnergy / 2 && this.isDodging == false &&
+      this.livingTime >= config.creature.adultAge) {
       this.isFindingMate = true;
       this.reproductionStatus.isFindingMate = true;
       this.reproductionStatus.isCopuling = false;
       this.reproductionStatus.isCopulingFinished = false;
-    }
-    else {
+    } else {
       this.isFindingMate = false;
       this.reproductionStatus.isFindingMate = false;
     }
   }
 
   move() {
-    
+
     if (!this.reproductionStatus.isCopuling)
       super.move();
-    else{
+    else {
 
-      this.sprite.direction+=0.1;
+      this.sprite.direction += 0.1;
       this.sprite.rotation = -this.sprite.direction + Math.PI;
       let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
       let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
       this.setPosition(x, y);
     }
   }
-  
-
-
-  /*
-  
-  doReproductionMovement(partner) {
-    let center, rotate;
-    if (this.gender == Constants.genders.FEMALE) {
-      center = this;
-      rotate = partner;
-    }
-    else {
-      center = partner;
-      rotate = this;
-    }
-
-    let pos = helper.rotateArroundSprite(center, rotate, 0.1);
-    
-    if (this.gender == Constants.genders.MALE) {
-      this.setDirection(pos.angle);
-      this.setPosition(pos.x, pos.y);
-      //partner.setPosition(partner.sprite.x, partner.sprite.y);
-    }
-    else
-    {
-      partner.setDirection(pos.angle);
-      partner.setPosition(pos.x, pos.y);
-      //this.setPosition(this.sprite.x, this.sprite.y);
-    }
-
-  }
-
-  */
 
   startCopuling() {
     this.reproductionStatus.isCopuling = true;
@@ -156,33 +121,39 @@ class Survivor extends Creature {
   }
 
   checkIfCopuling() {
-    if (this.reproductionStatus.isCopuling){
+    if (this.reproductionStatus.isCopuling) {
       if (this.reproductionTimer < 5) {
-        this.reproductionTimer+=0.01;
+        this.reproductionTimer += 0.01;
         this.reproductionStatus.isCopuling = true;
         this.reproductionStatus.isFindingMate = false;
         this.reproductionStatus.isCopulingFinished = false;
         this.sprite.tint = Constants.colors.BLUE;
-      }
-      else
-      {
+      } else {
         this.reproductionStatus.isCopulingFinished = true;
         this.reproductionStatus.isCopuling = false;
         this.reproductionStatus.isFindingMate = false;
-        this.sprite.tint = Constants.colors.WHITE
+        this.setColorByAge();
       }
     }
     return this.reproductionStatus.isCopuling;
   }
 
   reproduce(parent2) {
-      let reproduction = new Reproduction(this, parent2);
-      let son = reproduction.Evolve();
-      this.endCopuling();
-      return son;
+    let reproduction = new Reproduction(this, parent2);
+    let son = reproduction.Evolve();
+    this.endCopuling();
+    return son;
   }
 
-  
+  setColorByAge() {
+    if (this.livingTime < config.creature.adultAge) {
+      this.sprite.tint = Constants.colors.WHITE;
+    } else if (this.livingTime >= config.creature.elderAge) {
+      this.sprite.tint = Constants.colors.GREEN;
+    } else {
+      this.sprite.tint = Constants.colors.RED;
+    }
+  }
 
   /**
    * 
@@ -196,7 +167,7 @@ class Survivor extends Creature {
     if (this.reproductionStatus.isCopuling)
       return;
 
-      /*
+    /*
     if (this.energy > this.maxEnergy / 2 && this.isDodging == false) {
       this.isFindingMate = true;
       this.reproductionStatus.isFindingMate = true;
@@ -230,7 +201,7 @@ class Survivor extends Creature {
       };
 
       if (mateFound > 0) {
-        let survivor =  survivorInfo.find(o => o.uid == nearestSurvivorUid);
+        let survivor = survivorInfo.find(o => o.uid == nearestSurvivorUid);
 
         if (nearestSurvivorDistance <= this.copulingDistance) {
 
@@ -247,15 +218,14 @@ class Survivor extends Creature {
             };
 
             console.log("puede");
-            
+
           }
-        }
-        else{
+        } else {
           this.nearestSurvivorDistance = nearestSurvivorDistance;
           this.nearestSurvivorUid = nearestSurvivorUid;
           this.setDirection(angle);
           //this.reproductionStatus.isCopuling = false;
-          
+
         }
 
       }
@@ -280,7 +250,6 @@ class Survivor extends Creature {
     if (this.livingTime < config.creature.adultAge) {
       return false;
     }
-    
 
     //from diferent genders
     if (this.gender == survivor.gender) {
@@ -323,7 +292,6 @@ class Survivor extends Creature {
     if (survivor.energy < survivor.maxEnergy / 2 || survivor.isDodging == true) {
       return false;
     }
-    
 
     return true;
 
@@ -390,7 +358,7 @@ class Survivor extends Creature {
     let dist = helper.CheckDistanceBetweenSprites(this.sprite, predator.sprite);
     if (dist.distance < this.visionRange) {
       if (this.isDodging == false) {
-        this.setDirection(predator.direction + predator.direction*Math.random(30,60));
+        this.setDirection(predator.direction + predator.direction * Math.random(30, 60));
         this.isDodging = true;
         //this.sprite.tint = Constants.colors.BLUE;
       }
@@ -405,7 +373,7 @@ class Survivor extends Creature {
    */
   eat() {
     this.numBugEated++;
-    if (this.energy  + 1 <= config.creature.maxEnergy)
+    if (this.energy + 1 <= config.creature.maxEnergy)
       this.energy += 1;
     this.nearestFoodDistance = 1000;
     this.nearestFoodIdx = 9999;

@@ -1,5 +1,5 @@
 class CreatureHud {
-    constructor(app) {
-        
-    }
+  constructor(app) {
+
+  }
 }

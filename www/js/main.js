@@ -20,13 +20,10 @@ let appWidth, appHeight;
 if (config.app.autoSize) {
   appWidth = window.innerWidth;
   appHeight = window.innerHeight;
-}
-else
-{
+} else {
   appWidth = config.app.width;
   appHeight = config.app.height;
 }
-
 
 var app = new PIXI.Application({
   width: appWidth, //config.app.width, //800,//1600,
@@ -118,7 +115,7 @@ function setup() {
     app.screen.width,
     app.screen.height
   );
-  
+
   app.stage.addChild(tilingSprite);
 
   //Scene 0 : to rotate device (optional)
@@ -144,8 +141,8 @@ function setup() {
       world: world,
       splash: splashScreen,
       rotation: deviceRotationScreen,
-      inGameInformation : inGameInformation,
-      uiControls : uiControls
+      inGameInformation: inGameInformation,
+      uiControls: uiControls
     }
   }
 
@@ -157,7 +154,6 @@ function setup() {
   } else {
     state = splash; //run function
   }
-
 
   app.ticker.add(delta => gameLoop(delta));
 
@@ -199,16 +195,18 @@ function run(delta) {
       evaluateGeneration();
       iteration = 0;
 
-      //Regenerate Food
-      world.loadFood(helper.generateRandomInteger(0, config.world.maxFoodGenerationRatio));
+    }
 
+    //Regenerate Food
+    if (world.foodInfo.length < config.world.maxFood * config.world.foodRegenerationThreshold) {
+      world.loadFood(helper.generateRandomInteger(0, config.world.maxFoodGenerationRatio));
     }
 
     //TODO : cambiar esto, lo estoy usando para cambiar la direccion del background image, 
     //un poco fucker. Si las iteraciones son multiplos de 200, cambio la direccion del fondo
     //de pantalla. ([x,y]+desplazamiento)*switchDirection. Esto no funciona cuando quiera
     //cambiar el fondo de pantalla por otro de diferente tamaño
-    if (currentTick % 500 === 0) {
+    if (currentTick % 600 === 0) {
       switchDirection *= -1;
     }
   }
@@ -291,9 +289,6 @@ function evaluateGeneration() {
 
 }
 
-
-
-
 function deviceRotation(delta) {
   stateManager.setState(Constants.simulationStates.ROTATION);
   moveBackground();
@@ -308,8 +303,6 @@ function moveBackground() {
   tilingSprite.tilePosition.x -= 0.1 * switchDirection;
   tilingSprite.tilePosition.y -= 0.1 * switchDirection;
 }
-
-
 
 function onKeyDown(key) {
 

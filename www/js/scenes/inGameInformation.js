@@ -4,15 +4,15 @@ class InGameInformation {
 
     //UI Information
     this.uiTextInfo = new PIXI.Text("TEST", {
-        fontWeight: 'bold',
-        //fontStyle: 'italic',
-        fontSize: 17,
-        //fontFamily: 'Arvo',
-        fill: '#FFFFFF',
-        align: 'center',
-        //stroke: '#a4410e',
-        strokeThickness: 2
-      });
+      fontWeight: 'bold',
+      //fontStyle: 'italic',
+      fontSize: 17,
+      //fontFamily: 'Arvo',
+      fill: '#FFFFFF',
+      align: 'center',
+      //stroke: '#a4410e',
+      strokeThickness: 2
+    });
 
     //this.uiTextInfo.x = app.screen.width / 2;
     //this.uiTextInfo.y = app.screen.height - 30;
@@ -26,7 +26,6 @@ class InGameInformation {
 
     app.stage.addChild(this.uiTextInfo);
 
-  
   }
 
   showScene() {
@@ -37,7 +36,7 @@ class InGameInformation {
       }
     }
     */
-   this.uiTextInfo.visible = true;
+    this.uiTextInfo.visible = true;
   }
 
   hideScene() {
@@ -58,11 +57,10 @@ class InGameInformation {
       sprites + " - #Predators: " + predators + " ] - FPS : " + Math.round(fps);
   }
 
-  setPosition(width,height) {
-
+  setPosition(width, height) {
 
     this.uiTextInfo.x = width / 2;
     this.uiTextInfo.y = height - 30;
-    
+
   }
 }

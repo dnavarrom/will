@@ -25,6 +25,7 @@ class FoodSprite extends CustomSprite {
     this.uid = helper.generateGuid();
     this.sprite.uid = this.uid;
     this.setParameters();
+    super.setBehavior();
   };
 
   setParameters() {
@@ -45,7 +46,7 @@ class FoodSprite extends CustomSprite {
     this.sprite.speed = (10 + Math.random() * 15) * 0.02;
 
     this.sprite.foodBounds = this.getBounds();
-    
+
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
@@ -57,8 +58,8 @@ class FoodSprite extends CustomSprite {
     foodBounds = new PIXI.Rectangle(
       -foodBoundsPadding,
       -foodBoundsPadding,
-      (this.appScreenWidth - 50) + foodBoundsPadding * 2,
-      (this.appScreenHeight - 50) + foodBoundsPadding * 2
+      (this.appScreenWidth) + foodBoundsPadding * 2,
+      (this.appScreenHeight) + foodBoundsPadding * 2
     );
 
     return foodBounds;

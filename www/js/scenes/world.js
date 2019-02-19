@@ -262,10 +262,9 @@ class World {
       return;
     }
 
-
     console.log(population.length);
     //TODO: Que no sean arreglos
-    
+
     for (var i = 0; i < population.length; i++) {
       //let p = new Survivor(PIXI).Init(this.survivorsInfo.length,population[i], app);
 
@@ -335,8 +334,6 @@ class World {
     this.creatureHudInfo.push(hudTextInfo);
   }
 
-  
-
   addReproductionTargetLine(survivor) {
     let graph = new PIXI.Graphics();
     graph.uid = survivor.uid;
@@ -351,19 +348,18 @@ class World {
         let childrenObj = this.survivorsInfo.find(o => o.uid == this.survivorsInfo[i].childrens[j]);
         if (childrenObj) {
           let currentLine = this.targetMateLineInfo.find(o => o.uid == this.survivorsInfo[i].sprite.uid);
-            if (currentLine) {
-              currentLine.clear();
-              currentLine.lineStyle(1, Constants.colors.BLUE, 1)
-                .moveTo(this.survivorsInfo[i].sprite.x, this.survivorsInfo[i].sprite.y)
-                .lineTo(childrenObj.sprite.x, childrenObj.sprite.y);
-              currentLine.beginFill(0.2);
-              currentLine.endFill();
-            }
+          if (currentLine) {
+            currentLine.clear();
+            currentLine.lineStyle(1, Constants.colors.BLUE, 1)
+              .moveTo(this.survivorsInfo[i].sprite.x, this.survivorsInfo[i].sprite.y)
+              .lineTo(childrenObj.sprite.x, childrenObj.sprite.y);
+            currentLine.beginFill(0.2);
+            currentLine.endFill();
+          }
         }
       }
     }
   }
-
 
   /**
    * Process food sprites and events
@@ -373,6 +369,8 @@ class World {
     for (var i = 0; i < this.foodInfo.length; i++) {
 
       this.foodInfo[i].direction += this.foodInfo[i].turningSpeed * 0.01;
+      //check for border colission and change direction
+      this.foodInfo[i].direction = this.foodInfo[i].handleBorderCollition();
       this.foodInfo[i].x += Math.sin(this.foodInfo[i].direction) * (this.foodInfo[i].speed * this.foodInfo[i].scale.y);
       this.foodInfo[i].y += Math.cos(this.foodInfo[i].direction) * (this.foodInfo[i].speed * this.foodInfo[i].scale.y);
       this.foodInfo[i].rotation = -this.foodInfo[i].direction + Math.PI;
@@ -390,7 +388,8 @@ class World {
         this.foodInfo[i].y += this.foodInfo[i].foodBounds.height;
       } else if (this.foodInfo[i].y > this.foodInfo[i].foodBounds.y + this.foodInfo[i].foodBounds.height) {
         this.foodInfo[i].y -= this.foodInfo[i].foodBounds.height;
-      }*/
+      }
+      */
     }
   }
 
@@ -415,6 +414,7 @@ class World {
           //survivor.isDead = true;
           this.killSurvivor(survivor);
           console.log("survivor #" + dude.uid + " is dead (eaten)");
+
           //TODO: FIX this, this.survivorsInfo is not discounting
           this.predatorsInfo[i].eat();
         }.bind(this)
@@ -462,7 +462,7 @@ class World {
 
         /**** 
          * FIRST PRIORITY : Find Food and survive
-        */
+         */
         if (!this.survivorsInfo[i].reproductionStatus.isCopuling) {
           this.survivorsInfo[i].findFood(this.foodInfo);
         }
@@ -477,64 +477,56 @@ class World {
          * Second priority : reproduce 
          */
 
-        
-
         //during copuling
-        if (this.survivorsInfo[i].reproductionStatus.isCopuling) {
-        }
+        if (this.survivorsInfo[i].reproductionStatus.isCopuling) {} else {
 
-        else {
-
-          
           //after
-          if (this.survivorsInfo[i].reproductionStatus.isCopulingFinished && 
+          if (this.survivorsInfo[i].reproductionStatus.isCopulingFinished &&
             !this.survivorsInfo[i].reproductionStatus.isCopuling &&
             !this.survivorsInfo[i].reproductionStatus.isFindingMate) {
-          //start to generate sons
-          let parent2 = this.survivorsInfo.find(o=>o.uid == this.survivorsInfo[i].getCurrentMate())
-          if (parent2) {
-            let son = this.survivorsInfo[i].reproduce(parent2);
-            this.childInfo.push(son);
-            this.createNewSurvivors(this.childInfo);
-          }
-          else {
-            console.log(this.survivorsInfo[i].getCurrentMate() + " no encontrado" );
-          }
-
-          //stop copuling / reset all
-          this.survivorsInfo[i].reproductionStatus.isCopulingFinished = false;
-          this.survivorsInfo[i].reproductionStatus.isCopuling = false;
-          this.survivorsInfo[i].reproductionStatus.isFindingMate = false;
-
-          }
-      }
-        
-        //find mate to reproduce
-        
-        if (this.survivorsInfo[i].reproductionStatus.isCopuling || 
-          this.survivorsInfo[i].reproductionStatus.isFindingMate){
-            let cr;
-            if (this.survivorsInfo.length < config.world.maxSurvivors)
-              cr = this.survivorsInfo[i].findMate(this.survivorsInfo);
-
-            //check if they can reproduce
-            if (cr && cr.canReproduce == true) {
-              console.log("PUEDE CULIAR " + cr.partnerUid);
-              //let partner = this.survivorsInfo.find(o=>o.uid == cr.partnerUid);
-              //partner = true;
-              let idx = this.survivorsInfo.map(o => o.uid)
-                .indexOf(cr.partnerUid);
-
-              if (this.survivorsInfo[i].reproductionStatus.isFindingMate) {
-                this.survivorsInfo[idx].startCopuling();
-                this.survivorsInfo[i].startCopuling();
-                this.survivorsInfo[idx].setCurrentMate(this.survivorsInfo[i].uid);
-                this.survivorsInfo[i].setCurrentMate(this.survivorsInfo[idx].uid);
-              }
-
+            //start to generate sons
+            let parent2 = this.survivorsInfo.find(o => o.uid == this.survivorsInfo[i].getCurrentMate())
+            if (parent2) {
+              let son = this.survivorsInfo[i].reproduce(parent2);
+              this.childInfo.push(son);
+              this.createNewSurvivors(this.childInfo);
+            } else {
+              console.log(this.survivorsInfo[i].getCurrentMate() + " no encontrado");
             }
+
+            //stop copuling / reset all
+            this.survivorsInfo[i].reproductionStatus.isCopulingFinished = false;
+            this.survivorsInfo[i].reproductionStatus.isCopuling = false;
+            this.survivorsInfo[i].reproductionStatus.isFindingMate = false;
+
+          }
         }
-      
+
+        //find mate to reproduce
+
+        if (this.survivorsInfo[i].reproductionStatus.isCopuling ||
+          this.survivorsInfo[i].reproductionStatus.isFindingMate) {
+          let cr;
+          if (this.survivorsInfo.length < config.world.maxSurvivors)
+            cr = this.survivorsInfo[i].findMate(this.survivorsInfo);
+
+          //check if they can reproduce
+          if (cr && cr.canReproduce == true) {
+            console.log("PUEDE CULIAR " + cr.partnerUid);
+            //let partner = this.survivorsInfo.find(o=>o.uid == cr.partnerUid);
+            //partner = true;
+            let idx = this.survivorsInfo.map(o => o.uid)
+              .indexOf(cr.partnerUid);
+
+            if (this.survivorsInfo[i].reproductionStatus.isFindingMate) {
+              this.survivorsInfo[idx].startCopuling();
+              this.survivorsInfo[i].startCopuling();
+              this.survivorsInfo[idx].setCurrentMate(this.survivorsInfo[i].uid);
+              this.survivorsInfo[i].setCurrentMate(this.survivorsInfo[idx].uid);
+            }
+
+          }
+        }
 
         //check for border colission and change direction
         this.survivorsInfo[i].setDirection(this.survivorsInfo[i].sprite.handleBorderCollition());
@@ -554,8 +546,6 @@ class World {
             }
           }.bind(this)
         );
-
-      
 
         //Move
         this.survivorsInfo[i].move();
@@ -592,21 +582,20 @@ class World {
   }
 
   updateCreatureHudInformation() {
-    
-    for (let i = 0; i<this.creatureHudInfo.length; i++) {    
-      let surv = this.survivorsInfo.find(o=>o.uid == this.creatureHudInfo[i].uid);    
+
+    for (let i = 0; i < this.creatureHudInfo.length; i++) {
+      let surv = this.survivorsInfo.find(o => o.uid == this.creatureHudInfo[i].uid);
       if (surv) {
         this.creatureHudInfo[i].x = surv.sprite.x - 10;
         this.creatureHudInfo[i].y = surv.sprite.y - 20;
-        this.creatureHudInfo[i].text = helper.getEnergyBar(surv.collectStats().energy);
+        this.creatureHudInfo[i].text = helper.getEnergyBar(surv.collectStats()
+          .energy);
       }
     }
 
     if (debugModeOn) {
       this.creatureHudContainer.alpha = 0.5;
-    }
-    else
-    {
+    } else {
       this.creatureHudContainer.alpha = 0;
     }
   }

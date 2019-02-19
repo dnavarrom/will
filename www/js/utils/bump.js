@@ -21,8 +21,10 @@ class Bump {
       //gx
       if (sprite.gx === undefined) {
         Object.defineProperty(sprite, "gx", {
-          get() { return sprite.getGlobalPosition()
-              .x },
+          get() {
+            return sprite.getGlobalPosition()
+              .x
+          },
           enumerable: true,
           configurable: true
         });
@@ -31,8 +33,10 @@ class Bump {
       //gy
       if (sprite.gy === undefined) {
         Object.defineProperty(sprite, "gy", {
-          get() { return sprite.getGlobalPosition()
-              .y },
+          get() {
+            return sprite.getGlobalPosition()
+              .y
+          },
           enumerable: true,
           configurable: true
         });

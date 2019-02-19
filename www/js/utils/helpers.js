@@ -52,8 +52,7 @@ class Helpers {
     return angle;
   }
 
-  
-  getDistanceBetweenSprites(r1,r2) {
+  getDistanceBetweenSprites(r1, r2) {
     let vx, vy;
 
     //Find the center points of each sprite
@@ -116,14 +115,13 @@ class Helpers {
     return returnData;
   }
 
-
-
   /**
    * 
    * @param {*} r1  sprite central
    * @param {*} r2  sprite que rota
    * @param {*} increment velocidad
    */
+
   /*
   rotateArroundSprite(r1, r2, increment) {
 
@@ -162,12 +160,12 @@ class Helpers {
    */
   getEnergyBar(energy) {
     let x = energy / config.creature.maxEnergy;
-    if (x == 0) { 
+    if (x == 0) {
       return "d";
     }
-    if (x > 0 && x <=0.25)
+    if (x > 0 && x <= 0.25)
       return "*";
-    
+
     if (x > 0.25 && x <= 0.5)
       return "**";
 
@@ -177,6 +175,7 @@ class Helpers {
     if (x > 0.75 && x <= 1) {
       return "****";
     }
-      
+
   }
+
 }
