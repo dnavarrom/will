@@ -5,6 +5,7 @@ module.exports = function (grunt) {
 
     // load all grunt tasks
     require('load-grunt-tasks')(grunt);
+    require('grunt-contrib-copy')(grunt);
     require('grunt-contrib-concat')(grunt);
     
     // Project configuration.
@@ -41,20 +42,9 @@ module.exports = function (grunt) {
             }
         },
 
+        
         /**
-         * Compile LESS to CSS.
-         */
-        less: {
-            production: {
-                options: {},
-                files: {
-                    'www/css/main.css': 'less/main.less'
-                }
-            }
-        },
-
-        /**
-         * Concat app files to bundle.js folder
+         * Concat app files to bundle.js
          */
         concat : {
             bundler : {
@@ -72,10 +62,60 @@ module.exports = function (grunt) {
                         "www/js/stateManager.js"],
                 dest : "www/js/bundle.js"
             }
-        }
+        },
+
+        /**
+         * Copy required files to Dist
+         */
+
+         copy : {
+             jsbundle : {
+                expand:true, 
+                cwd : "www/js",
+                src : "bundle.js",
+                dest: "dist/js"
+             },
+             jsmain : {
+                expand:true, 
+                cwd : "www/js",
+                src : "main.js",
+                dest: "dist/js"
+             },
+             jslib : {
+                expand:true, 
+                cwd : "www/js/lib",
+                src : "**",
+                dest: "dist/js/lib"
+             },
+             css : {
+                 expand:true,
+                 cwd:"www/css",
+                 src: "**",
+                 dest: "dist/css/"
+             },
+             img : {
+                 expand :true,
+                 cwd:"www/img",
+                 src:"**",
+                 dest:"dist/img"
+             },
+             base : {
+                 expand : true,
+                 cwd : "www",
+                 src:"index.html",
+                 dest:"dist"
+             },
+             favicon : {
+                expand : true,
+                cwd : "www",
+                src:"favicon.ico",
+                dest:"dist"
+            }
+         }
 
     });
 
     grunt.registerTask('serve', ['connect:main', 'concat', 'watch']);
+    grunt.registerTask('publish', ['concat', 'copy']); 
 
 };
