@@ -1,5 +1,6 @@
-class CustomSprite {
+class CustomSprite extends PIXI.Sprite {
   constructor(opt) {
+    super();
     this.appScreenWidth = opt.screenWidth;
     this.appScreenHeight = opt.screenHeight;
   }
@@ -18,7 +19,7 @@ class CustomSprite {
         y: this.y,
         width: this.width,
         height: this.height
-      }
+      };
 
       let borderX = this.x; // + sprite.width;
       let borderY = this.y; // + sprite.height;
@@ -48,7 +49,7 @@ class CustomSprite {
       }
 
       return direction;
-    }
+    };
 
   }
 

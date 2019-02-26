@@ -1,10 +1,4 @@
-let Application = PIXI.Application,
-  Container = PIXI.Container,
-  loader = PIXI.loader,
-  resources = PIXI.loader.resources,
-  TextureCache = PIXI.utils.TextureCache,
-  Rectangle = PIXI.Rectangle;
-//UiTextInfo = PIXI.Text;
+let loader = PIXI.loader;
 
 let b = new Bump(PIXI);
 let helper = new Helpers();
@@ -32,7 +26,6 @@ var app = new PIXI.Application({
   transparent: false, // default: false
   resolution: resolution, // default: 1
   autoResize: true
-  //backgroundColor : config.app.visual.bgcolor
 });
 
 //app.renderer.autoResize = true;
@@ -47,36 +40,25 @@ SpriteFactory.register("FoodSprite", FoodSprite);
 SpriteFactory.register("PredatorSprite", PredatorSprite);
 SpriteFactory.register("SurvivorSprite", SurvivorSprite);
 
-console.log("PARAMETERS");
-console.log("==========");
-console.log(app.screen.width);
-console.log(app.screen.height);
 
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild(app.renderer.view);
 
 //States
-let state;
-let stateManager;
+let state; //state function (pixi)
+let stateManager; //scene state 
 
 //Scenes
 var tilingSprite; //movimiento del fondo de pantalla
 var splashScreen; //container
 var deviceRotationScreen; //container
-var world;
-var inGameInformation;
+var world; //main simulation
+var inGameInformation; //
 var uiControls;
 
-// global : create an array to store all the sprites
-//var world.worldInfo.survivorsInfo = [];
-
 //global : collect Status
-
 var generationStats = [];
 generationStats.push({ BestsurvivorId: -1, WorsesurvivorId: -1, BestFitness: -1, WorseFitness: -1 });
-
-//bordes de los tipos de objetos
-var foodBounds;
 
 //game loop
 var tick = 0;
@@ -87,9 +69,6 @@ var GenerationLimit = config.evolution.generationLimit;
 //animation-background
 var switchDirection = 1; //to change background scrolling direction
 
-var totalSurvivors = config.world.survivors;
-var totalPredators = config.world.predators;
-var totalFood = config.world.food;
 //debug Mode
 var debugModeOn = config.debugMode;
 
@@ -123,8 +102,8 @@ function setup() {
 
   //Scene 1 : Splash
   splashScreen = new Splash(app);
-  splashScreen.startText.on('click', onStartTextClick);
-  splashScreen.startText.on('tap', onStartTextClick);
+  splashScreen.startText.on("click", onStartTextClick);
+  splashScreen.startText.on("tap", onStartTextClick);
 
   //Scene 2 : Main Simulation
   world = new World(app, b);
@@ -135,6 +114,8 @@ function setup() {
   //Scene 4: UI Controls
   uiControls = new UiControls(app);
 
+  
+
   //Collect Scenes:
   let opt = {
     scenes: {
@@ -144,7 +125,7 @@ function setup() {
       inGameInformation: inGameInformation,
       uiControls: uiControls
     }
-  }
+  };
 
   stateManager = new StateManager(opt);
 
@@ -185,6 +166,20 @@ function run(delta) {
 
   /* Process food */
   world.processFood();
+
+  /* Process events */
+  uiControls.processEvents(world);
+
+  /*
+  for(const key in uiControls.actionEvents) {
+    let values = uiControls.actionEvents[key];
+    if (values.length > 0) {
+      if (key == "addCreature") {
+        world.initSurvivors(1);
+      }
+    }
+    uiControls.actionEvents[key] = [];
+  } */
 
   if (tick > currentTick) {
     iteration++;
@@ -250,17 +245,10 @@ function gameLoop(delta) {
  */
 function evaluateGeneration() {
 
-  var BestsurvivorId = 0;
-  var WorsesurvivorId = 0;
-  var BestFitness = 0;
-  var WorseFitness = 0;
-  var TotalEated = 0;
-  var TotalDeaths = 0;
-
   var survivorsOrderedInfo = [];
 
   //ordenado de menor a mayor
-  survivorsOrderedInfo = _.sortBy(_.union(world.survivorsInfo, world.deadSurvivors), 'numBugEated');
+  survivorsOrderedInfo = _.sortBy(_.union(world.survivorsInfo, world.deadSurvivors), "numBugEated");
 
   let lastIdx = survivorsOrderedInfo.length;
 
@@ -289,12 +277,12 @@ function evaluateGeneration() {
 
 }
 
-function deviceRotation(delta) {
+function deviceRotation() {
   stateManager.setState(Constants.simulationStates.ROTATION);
   moveBackground();
 }
 
-function splash(delta) {
+function splash() {
   stateManager.setState(Constants.simulationStates.SPLASH);
   moveBackground();
 }
@@ -373,6 +361,6 @@ function readDeviceOrientation() {
 
 }
 
-document.addEventListener('keydown', onKeyDown);
+document.addEventListener("keydown", onKeyDown);
 window.addEventListener("resize", resizeMe);
 window.onorientationchange = readDeviceOrientation;

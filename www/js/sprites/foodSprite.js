@@ -50,12 +50,12 @@ class FoodSprite extends CustomSprite {
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
-  };
+  }
 
   getBounds() {
 
     let foodBoundsPadding = 200;
-    foodBounds = new PIXI.Rectangle(
+    let foodBounds = new PIXI.Rectangle(
       -foodBoundsPadding,
       -foodBoundsPadding,
       (this.appScreenWidth) + foodBoundsPadding * 2,

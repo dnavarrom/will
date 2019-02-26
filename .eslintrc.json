@@ -24,5 +24,16 @@
             "error",
             "always"
         ]
-    }
+    },
+    "overrides" :[
+        {
+            "files" : ["*.js"], 
+            "rules" : {
+                "indent" : "off",
+                "no-undef" : "off",
+                "linebreak-style" : "off"
+            }
+        }
+    ]
+
 }

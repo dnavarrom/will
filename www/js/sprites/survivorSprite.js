@@ -42,6 +42,11 @@ class SurvivorSprite extends CustomSprite {
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
+
+    
   }
+
+  
+
 
 }

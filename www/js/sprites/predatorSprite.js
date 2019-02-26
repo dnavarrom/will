@@ -16,7 +16,7 @@ class PredatorSprite extends CustomSprite {
     super.setBehavior();
     this.idx = opt.i;
     return this.sprite;
-  };
+  }
 
   setParameters() {
     this.sprite.anchor.set(0.5);
@@ -27,6 +27,6 @@ class PredatorSprite extends CustomSprite {
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
-  };
+  }
 
 }

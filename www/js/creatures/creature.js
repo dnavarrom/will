@@ -13,7 +13,7 @@ const GenerateRandomParameters = function() {
   //console.log(parameters);
 
   return parameters;
-}
+};
 
 class Creature {
 

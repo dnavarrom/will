@@ -7,7 +7,7 @@ const SpriteFactory = {
       classPrototype.prototype instanceof CustomSprite) {
       SpriteFactory.registeredTypes.set(classname, classPrototype);
     } else {
-      console.error(classname + " is not instance of Sprite");
+      console.error(classname + " is not instance of CustomSprite");
     }
   },
 

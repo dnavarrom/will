@@ -37,7 +37,7 @@ module.exports = function (grunt) {
                     spawn: false
                 },
                 files: ['www/*.html', 'www/js/**/*','www/**/*.html', 'www/img/*', 'less/**/*.less', 'less/*.less'],
-                tasks: ['less','concat'] //all the tasks are run dynamically during the watch event handler
+                tasks: ['concat'] //all the tasks are run dynamically during the watch event handler
 
             }
         },
@@ -56,8 +56,10 @@ module.exports = function (grunt) {
                         "www/js/constants.js",
                         "www/js/sprites/customSprite.js",
                         "www/js/sprites/foodSprite.js",
+                        "www/js/sprites/energyBarSprite.js",
                         "www/js/sprites/predatorSprite.js",
                         "www/js/sprites/survivorSprite.js",
+                        "www/js/sprites/buttonSprite.js",
                         "www/js/creatures/*.js",
                         "www/js/stateManager.js"],
                 dest : "www/js/bundle.js"
@@ -115,7 +117,7 @@ module.exports = function (grunt) {
 
     });
 
-    grunt.registerTask('serve', ['connect:main', 'concat', 'watch']);
+    grunt.registerTask('serve', [ 'concat', 'connect:main','watch']);
     grunt.registerTask('publish', ['concat', 'copy']); 
 
 };

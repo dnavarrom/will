@@ -13,7 +13,7 @@ var config = {
     predators: 1,
     survivors: 45,
     maxFoodGenerationRatio: 50,
-    foodRegenerationThreshold: 0.1, // % of max food to regenerate food
+    foodRegenerationThreshold: 0.15, // % of max food to regenerate food
     maxFood: 150,
     maxSurvivors: 90,
     maxPredators: 3

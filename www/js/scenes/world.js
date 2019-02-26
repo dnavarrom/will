@@ -1,3 +1,4 @@
+/*eslint-disable*/
 class World {
   constructor(app, b) {
 
@@ -68,6 +69,7 @@ class World {
       alpha: true
     })
     app.stage.addChild(this.creatureHudContainer);
+    this.showEnergyBar = false;
 
     this.targetMateLineContainer = new PIXI.Container(1000, {
       scale: true,
@@ -262,9 +264,7 @@ class World {
       return;
     }
 
-    console.log(population.length);
     //TODO: Que no sean arreglos
-
     for (var i = 0; i < population.length; i++) {
       //let p = new Survivor(PIXI).Init(this.survivorsInfo.length,population[i], app);
 
@@ -315,21 +315,8 @@ class World {
   }
 
   addCreatureHudInformation(survivor) {
-    var hudTextInfo = new PIXI.Text("E: 100%", {
-      fontWeight: 'bold',
-      //fontStyle: 'italic',
-      fontSize: 10,
-      fontFamily: 'Arvo',
-      fill: '#FFFFFF',
-      align: 'left',
-      //stroke: '#a4410e',
-      strokeThickness: 1
-    });
 
-    hudTextInfo.uid = survivor.uid;
-    hudTextInfo.x = survivor.sprite.x - 20;
-    hudTextInfo.y = survivor.sprite.y - 5
-
+    let hudTextInfo = new EnergyBarSprite({ app: app, survivor: survivor });
     this.creatureHudContainer.addChild(hudTextInfo);
     this.creatureHudInfo.push(hudTextInfo);
   }
@@ -581,23 +568,52 @@ class World {
 
   }
 
+  /* EVENT HANDLERS */
+
+  showEnergyBarEventHandler() {
+
+    this.showEnergyBar = !this.showEnergyBar;
+
+    if (this.showEnergyBar)
+      this.creatureHudContainer.alpha = 0.5;
+    else
+      this.creatureHudContainer.alpha = 0;
+
+  }
+
+  showVisionRangeHandler() {
+    debugModeOn = !debugModeOn
+  }
+
   updateCreatureHudInformation() {
 
     for (let i = 0; i < this.creatureHudInfo.length; i++) {
       let surv = this.survivorsInfo.find(o => o.uid == this.creatureHudInfo[i].uid);
       if (surv) {
+        /*
         this.creatureHudInfo[i].x = surv.sprite.x - 10;
         this.creatureHudInfo[i].y = surv.sprite.y - 20;
         this.creatureHudInfo[i].text = helper.getEnergyBar(surv.collectStats()
-          .energy);
+          .energy); */
+
+        this.creatureHudInfo[i].setEnergyBar(surv, helper.getEnergyBar(surv.collectStats()
+          .energy));
       }
     }
 
+    /*
     if (debugModeOn) {
       this.creatureHudContainer.alpha = 0.5;
     } else {
       this.creatureHudContainer.alpha = 0;
     }
+    */
+
+    if (this.showEnergyBar)
+      this.creatureHudContainer.alpha = 0.5;
+    else
+      this.creatureHudContainer.alpha = 0;
+
   }
 
 }
