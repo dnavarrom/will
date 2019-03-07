@@ -1483,6 +1483,105 @@ class Bump {
   }
 }
 
+const EventHandler = {
+
+  registeredEventHandlers: {},
+  registeredEventActions: new Map(),
+
+  registerEventHandler(eventType, origin, callback) {
+    let eventDefinition = {
+      executed: false,
+      origin: origin,
+      callbackFunction: callback
+    };
+
+    found = false;
+
+    if (this.registeredEventHandlers[eventType] == null || this.registeredEventHandlers[eventType] == 'undefined') {
+      this.registeredEventHandlers[eventType] = [];
+      this.registeredEventHandlers[eventType].push(eventDefinition);
+    } else {
+      for (let i = 0; i < this.registeredEventHandlers[eventType].length; i++) {
+        if (this.registeredEventHandlers[eventType][i].origin == origin) {
+          this.registeredEventHandlers[eventType][i] = eventDefinition;
+          found = true;
+        }
+      }
+
+      if (!found) {
+        this.registeredEventHandlers[eventType].push(eventDefinition);
+      }
+
+    }
+  },
+
+  getEventHandler(eventType) {
+    if (!eventType)
+      return this.registeredEventHandlers;
+    else
+      return this.registeredEventHandlers[eventType];
+  },
+
+  validateEventType(eventType) {
+    if (this.registeredEventHandlers[eventType] == null ||
+      this.registeredEventHandlers[eventType] == "undefined") {
+      console.log("eventHandler.js : event [" + eventType + "] not registered");
+      return false;
+    }
+    return true;
+  },
+
+  setEventOrigin(eventType, origin) {
+
+    if (!this.validateEventType(eventType))
+      return;
+
+    for (let i = 0; i < this.registeredEventHandlers[eventType].length; i++) {
+      this.registeredEventHandlers[eventType][i].origin = origin;
+      this.registeredEventHandlers[eventType][i].executed = false;
+    }
+  },
+
+  setEventStatus(eventType, status) {
+    if (!this.validateEventType(eventType))
+      return;
+
+    for (let i = 0; i < this.registeredEventHandlers[eventType].length; i++) {
+      this.registeredEventHandlers[eventType][i].executed = status;
+    }
+  },
+
+  setCallbackFunction(eventType, origin, callback) {
+    if (!this.validateEventType(eventType))
+      return;
+
+    for (let i = 0; i < this.registeredEventHandlers[eventType].length; i++) {
+      if (this.registeredEventHandlers[eventType][i].origin == origin) {
+        this.registeredEventHandlers[eventType][i].callbackFunction = callback;
+      }
+    }
+  },
+
+  execute(eventType, origin, data) {
+    if (!this.validateEventType(eventType))
+      return;
+
+    for (let i = 0; i < this.registeredEventHandlers[eventType].length; i++) {
+      if (this.registeredEventHandlers[eventType][i].origin == origin) {
+        if (typeof(this.registeredEventHandlers[eventType][i].callbackFunction) === "function") {
+          if (this.registeredEventHandlers[eventType][i].executed == false) {
+            this.registeredEventHandlers[eventType][i].executed = true;
+            return this.registeredEventHandlers[eventType][i].callbackFunction(data);
+          }
+        } else {
+          console.log("EventType : " + eventType + "[" + origin + "].callbackfunction is not a function");
+        }
+      }
+    }
+  }
+
+}
+
 /* eslint-disable */
 
 function S4() {
@@ -1665,12 +1764,6 @@ class Helpers {
 
 }
 
-class CreatureHud {
-  constructor(app) {
-
-  }
-}
-
 class DeviceRotation {
   constructor(app) {
 
@@ -1840,34 +1933,202 @@ class Splash {
   }
 }
 
+/* eslint-disable */
 class UiControls {
 
   constructor(app) {
 
-    this.buttonAddCreature = new PIXI.Sprite(PIXI.loader.resources[
-      "img/icons/baseline_add_circle_outline_white_48dp.png"].texture);
-    this.buttonAddCreature.anchor.set(0.5); //center texture to sprite
-    this.buttonAddCreature.scale.set(1);
-    this.setPosition(app.screen.width, app.screen.height);
-    this.buttonAddCreature.alpha = 0.4;
-    app.stage.addChild(this.buttonAddCreature);
+    this.buttons = [];
+
+    this.AButton(); //Add Creature
+    this.BButton(); //Show Energy
+    this.CButton(); //Show Vision Range
+    this.DButton(); //Show Lineage
+    this.EButton(); //Show Best
+    this.FButton(); //Show Worse
+    this.GButton(); //Add Predator
+
+    this.buttonGroupPositionx = 100;
+    this.buttonGroupPositiony = 150;
+    this.verticalSeparation
+
   }
 
-  setPosition(width, height) {
-    this.buttonAddCreature.x = width - this.buttonAddCreature.width / 2 - 100;
-    this.buttonAddCreature.y = height - 100;
+  AButton() {
 
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 - 65,
+      width: 120,
+      height: 25,
+      radius: 25,
+      name: "button-add-creature",
+      event: "addCreature",
+      eventFunction: function(world) {
+        console.log("ButtonA Handler");
+        world.initSurvivors(1);
+      }
+    }
+
+    this.aButton = new Button(opt);
+
+    this.aButton.setText("Add Creature");
+    this.buttons.push(this.aButton);
+    app.stage.addChild(this.aButton);
+
+  }
+
+  BButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 5,
+      width: 120,
+      height: 25,
+      radius: 25,
+      name: "button-show-energy-bar",
+      event: "showEnergyBar",
+      eventFunction: function(world) {
+        console.log("ButtonB Handler");
+        world.showEnergyBarEventHandler();
+      }
+    }
+
+    this.bButton = new Button(opt);
+    this.bButton.setText("Show Energy Bar");
+    this.buttons.push(this.bButton);
+    app.stage.addChild(this.bButton);
+  }
+
+  CButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 40,
+      width: 120,
+      height: 25,
+      radius: 25,
+      name: "button-show-vision-range",
+      event: "showVisionRange",
+      eventFunction: function(world) {
+        console.log("ButtonC Handler");
+        world.showVisionRangeHandler();
+      }
+    }
+
+    this.cButton = new Button(opt);
+    this.cButton.setText("Show Vision Range");
+    this.buttons.push(this.cButton);
+    app.stage.addChild(this.cButton);
+  }
+
+  DButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 75,
+      width: 120,
+      height: 25,
+      radius: 25
+    }
+
+    this.dButton = new Button(opt);
+    this.dButton.setText("Show Lineage");
+    this.buttons.push(this.dButton);
+    app.stage.addChild(this.dButton);
+  }
+
+  EButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 110,
+      width: 120,
+      height: 25,
+      radius: 25
+    }
+
+    this.eButton = new Button(opt);
+    this.eButton.setText("Show Best Creature");
+    this.buttons.push(this.eButton);
+    app.stage.addChild(this.eButton);
+  }
+
+  FButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 145,
+      width: 120,
+      height: 25,
+      radius: 25
+    }
+
+    this.fButton = new Button(opt);
+    this.fButton.setText("Show Worse Creature");
+    this.buttons.push(this.fButton);
+    app.stage.addChild(this.fButton);
+  }
+
+  GButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 - 30,
+      width: 120,
+      height: 25,
+      radius: 25
+    }
+
+    this.gButton = new Button(opt);
+    this.gButton.setText("Add Predator");
+    this.buttons.push(this.gButton);
+    app.stage.addChild(this.gButton);
+  }
+
+  processEvents(data) {
+    this.handleButtonEvents(data);
+  }
+
+  handleButtonEvents(data) {
+    for (let i = 0; i < this.buttons.length; i++) {
+      let processed = [];
+      for (const key in this.buttons[i].eventListeners) {
+        //let values = this.buttons[i].eventListeners[key];
+        for (let v in this.buttons[i].eventListeners[key]) {
+          EventHandler.registerEventHandler(this.buttons[i].event, this.buttons[i].name, this.buttons[i].eventFunction);
+          EventHandler.execute(this.buttons[i].event, this.buttons[i].name, data);
+          processed.push(key);
+        }
+      }
+
+      for (let j = 0; j < processed.length; j++) {
+        this.buttons[i].clearEventListener(processed[j]);
+      }
+    }
   }
 
   showScene() {
-    this.buttonAddCreature.alpha = 0.3;
+    for (let b in this.buttons) {
+      this.buttons[b].alpha = 0.5;
+    }
   }
 
   hideScene() {
-    this.buttonAddCreature.alpha = 0;
+    for (let b in this.buttons) {
+      this.buttons[b].alpha = 0;
+    }
   }
 }
 
+/*eslint-disable*/
 class World {
   constructor(app, b) {
 
@@ -1938,6 +2199,7 @@ class World {
       alpha: true
     })
     app.stage.addChild(this.creatureHudContainer);
+    this.showEnergyBar = false;
 
     this.targetMateLineContainer = new PIXI.Container(1000, {
       scale: true,
@@ -2132,9 +2394,7 @@ class World {
       return;
     }
 
-    console.log(population.length);
     //TODO: Que no sean arreglos
-
     for (var i = 0; i < population.length; i++) {
       //let p = new Survivor(PIXI).Init(this.survivorsInfo.length,population[i], app);
 
@@ -2185,21 +2445,8 @@ class World {
   }
 
   addCreatureHudInformation(survivor) {
-    var hudTextInfo = new PIXI.Text("E: 100%", {
-      fontWeight: 'bold',
-      //fontStyle: 'italic',
-      fontSize: 10,
-      fontFamily: 'Arvo',
-      fill: '#FFFFFF',
-      align: 'left',
-      //stroke: '#a4410e',
-      strokeThickness: 1
-    });
 
-    hudTextInfo.uid = survivor.uid;
-    hudTextInfo.x = survivor.sprite.x - 20;
-    hudTextInfo.y = survivor.sprite.y - 5
-
+    let hudTextInfo = new EnergyBarSprite({ app: app, survivor: survivor });
     this.creatureHudContainer.addChild(hudTextInfo);
     this.creatureHudInfo.push(hudTextInfo);
   }
@@ -2451,23 +2698,52 @@ class World {
 
   }
 
+  /* EVENT HANDLERS */
+
+  showEnergyBarEventHandler() {
+
+    this.showEnergyBar = !this.showEnergyBar;
+
+    if (this.showEnergyBar)
+      this.creatureHudContainer.alpha = 0.5;
+    else
+      this.creatureHudContainer.alpha = 0;
+
+  }
+
+  showVisionRangeHandler() {
+    debugModeOn = !debugModeOn
+  }
+
   updateCreatureHudInformation() {
 
     for (let i = 0; i < this.creatureHudInfo.length; i++) {
       let surv = this.survivorsInfo.find(o => o.uid == this.creatureHudInfo[i].uid);
       if (surv) {
+        /*
         this.creatureHudInfo[i].x = surv.sprite.x - 10;
         this.creatureHudInfo[i].y = surv.sprite.y - 20;
         this.creatureHudInfo[i].text = helper.getEnergyBar(surv.collectStats()
-          .energy);
+          .energy); */
+
+        this.creatureHudInfo[i].setEnergyBar(surv, helper.getEnergyBar(surv.collectStats()
+          .energy));
       }
     }
 
+    /*
     if (debugModeOn) {
       this.creatureHudContainer.alpha = 0.5;
     } else {
       this.creatureHudContainer.alpha = 0;
     }
+    */
+
+    if (this.showEnergyBar)
+      this.creatureHudContainer.alpha = 0.5;
+    else
+      this.creatureHudContainer.alpha = 0;
+
   }
 
 }
@@ -2611,7 +2887,7 @@ const SpriteFactory = {
       classPrototype.prototype instanceof CustomSprite) {
       SpriteFactory.registeredTypes.set(classname, classPrototype);
     } else {
-      console.error(classname + " is not instance of Sprite");
+      console.error(classname + " is not instance of CustomSprite");
     }
   },
 
@@ -2642,7 +2918,7 @@ var config = {
     predators: 1,
     survivors: 45,
     maxFoodGenerationRatio: 50,
-    foodRegenerationThreshold: 0.1, // % of max food to regenerate food
+    foodRegenerationThreshold: 0.15, // % of max food to regenerate food
     maxFood: 150,
     maxSurvivors: 90,
     maxPredators: 3
@@ -2670,36 +2946,48 @@ var config = {
 
 const Constants = {
 
-  genders: {
-    MALE: "MALE",
-    FEMALE: "FEMALE"
-  },
+    genders: {
+      MALE: "MALE",
+      FEMALE: "FEMALE"
+    },
 
-  creatureTypes: {
-    SURVIVOR: "SURVIVOR",
-    PREDATOR: "PREDATOR"
-  },
-  colors: {
-    RED: 0xf91800,
-    BLUE: 0x000ff,
-    BLUEYALE: 0x0E4D92,
-    GREY: 0xb6b6ba,
-    DARKGREY: 0x313335,
-    LIGHTGREY: 0xD3D3D3,
-    WHITE: 0XFFFFFF,
-    GREEN: 0x00FF00,
-    ORANGE: 0xFC6600
-  },
-  simulationStates: {
-    RUN: "run",
-    SPLASH: "splash",
-    STOPPED: "stopped",
-    ROTATION: "rotation"
+    creatureTypes: {
+      SURVIVOR: "SURVIVOR",
+      PREDATOR: "PREDATOR"
+    },
+    colors: {
+      RED: 0xf91800,
+      BLUE: 0x000ff,
+      BLUEYALE: 0x0E4D92,
+      GREY: 0xb6b6ba,
+      DARKGREY: 0x313335,
+      LIGHTGREY: 0xD3D3D3,
+      WHITE: 0XFFFFFF,
+      GREEN: 0x00FF00,
+      ORANGE: 0xFC6600,
+      BLACK : 0X000000
+    },
+    simulationStates: {
+      RUN: "run",
+      SPLASH: "splash",
+      STOPPED: "stopped",
+      ROTATION: "rotation"
+    },
+    button: {
+      buttonType: {
+        rectangleButton: 1,
+        circleButton: 2
+      },
+      buttonColor : {
+        mouseOver: 0XCC9999,
+        mouseOut: 0XFFFFFF,
+        click: 0XCC6666
+      }
+    }
   }
-}
-
-class CustomSprite {
+class CustomSprite extends PIXI.Sprite {
   constructor(opt) {
+    super();
     this.appScreenWidth = opt.screenWidth;
     this.appScreenHeight = opt.screenHeight;
   }
@@ -2718,7 +3006,7 @@ class CustomSprite {
         y: this.y,
         width: this.width,
         height: this.height
-      }
+      };
 
       let borderX = this.x; // + sprite.width;
       let borderY = this.y; // + sprite.height;
@@ -2748,7 +3036,7 @@ class CustomSprite {
       }
 
       return direction;
-    }
+    };
 
   }
 
@@ -2814,12 +3102,12 @@ class FoodSprite extends CustomSprite {
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
-  };
+  }
 
   getBounds() {
 
     let foodBoundsPadding = 200;
-    foodBounds = new PIXI.Rectangle(
+    let foodBounds = new PIXI.Rectangle(
       -foodBoundsPadding,
       -foodBoundsPadding,
       (this.appScreenWidth) + foodBoundsPadding * 2,
@@ -2827,6 +3115,57 @@ class FoodSprite extends CustomSprite {
     );
 
     return foodBounds;
+  }
+
+}
+
+class EnergyBarSprite extends PIXI.Text {
+  constructor(opt) {
+    super("E: 100%", {
+      fontWeight: 'bold',
+      //fontStyle: 'italic',
+      fontSize: 10,
+      fontFamily: 'Arvo',
+      fill: '#FFFFFF',
+      align: 'left',
+      //stroke: '#a4410e',
+      strokeThickness: 1
+    });
+
+    this.appScreenWidth;
+    this.appScreenHeight;
+    this.init(opt);
+  }
+
+  init(opt) {
+
+    this.appScreenWidth = opt.screenWidth;
+    this.appScreenHeight = opt.screenHeight;
+    this.text = helper.getEnergyBar(opt.survivor.collectStats()
+      .energy);
+    this.uid = opt.survivor.uid;
+    this.x = opt.survivor.x;
+    this.y = opt.survivor.y;
+    this.visible = true;
+    this.alpha = 1;
+  }
+
+  setEnergyBar(sprite) {
+    this.uid = sprite.uid;
+    this.x = sprite.x - 10;
+    this.y = sprite.y - 20;
+    this.text = helper.getEnergyBar(sprite.collectStats()
+      .energy);
+  }
+
+  toggleEnergyBar() {
+    this.visible = !this.visible;
+
+    //TODO: solo para debug
+    if (this.visible)
+      this.alpha = 1;
+    if (!this.visible)
+      this.alpha = 1;
   }
 
 }
@@ -2849,7 +3188,7 @@ class PredatorSprite extends CustomSprite {
     super.setBehavior();
     this.idx = opt.i;
     return this.sprite;
-  };
+  }
 
   setParameters() {
     this.sprite.anchor.set(0.5);
@@ -2860,7 +3199,7 @@ class PredatorSprite extends CustomSprite {
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
-  };
+  }
 
 }
 
@@ -2908,6 +3247,174 @@ class SurvivorSprite extends CustomSprite {
     this.sprite.offset = Math.random() * 100;
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
+
+    
+  }
+
+  
+
+
+}
+
+/* eslint-disable */
+class Button extends CustomSprite {
+
+  constructor(opt) {
+    super(opt);
+
+    this.x = opt.x;
+    this.y = opt.y;
+    this.buttonWidth = opt.width;
+    this.buttonHeight = opt.height;
+    this.radius = opt.radius;
+    this.init(opt.buttonType);
+
+    this.name = opt.name; //buttonId
+    this.event = opt.event; //execution - purpose
+    this.eventFunction = opt.eventFunction;
+
+    this.eventListeners = {
+      'click': [],
+      'tap': [],
+      'pointerDown': [],
+      'pointerUp': []
+    }
+
+  }
+
+  addEventListener(eventName, callback) {
+    this.eventListeners[eventName].push(callback);
+  }
+
+  clearEventListener(eventName) {
+    this.eventListeners[eventName] = [];
+  }
+
+  circleButton(gfx) {
+    gfx.beginFill(Constants.button.buttonColor.mouseOut, 1);
+    gfx.drawCircle(0, 0, this.radius);
+    gfx.endFill();
+    return gfx.generateCanvasTexture();
+  }
+
+  rectangleButton(gfx) {
+    gfx.beginFill(Constants.button.buttonColor.mouseOut, 1);
+    gfx.drawRoundedRect(0, 0, this.buttonWidth, this.buttonHeight, this.buttonHeight / 5);
+    gfx.endFill();
+    return gfx.generateCanvasTexture();
+  }
+
+  init(bt) {
+
+    let gfx = new PIXI.Graphics();
+
+    // generate the texture
+    if (bt == Constants.button.buttonType.rectangleButton) {
+      this.texture = this.rectangleButton(gfx);
+    } else if (bt == Constants.button.buttonType.circleButton) {
+      this.texture = this.circleButton(gfx);
+    } else {
+      console.log("ButtonType not defined, using default rectangle button");
+      this.texture = this.rectangleButton(gfx);
+    }
+
+    // set the x, y and anchor
+    //this.x = x;
+    //this.y = y;
+    this.anchor.x = 0.5;
+    this.anchor.y = 0.5;
+
+    // create the text object
+
+    this.text = new PIXI.Text("", 'arial');
+    this.text.anchor = new PIXI.Point(0.5, 0.5);
+
+    this.addChild(this.text);
+
+    this.setBehavior();
+
+  }
+
+  setBehavior() {
+
+    // set the interactivity to true and assign callback functions
+    this.interactive = true;
+
+    this.on("click", function() {
+      this.tint = Constants.button.buttonColor.click;
+    });
+
+    this.on("tap", function() {
+      //console.log("tap");
+    });
+
+    this.on("pointerdown", function() {
+      this.isdown = true;
+      this.tint = Constants.button.buttonColor.click;
+
+      this.addEventListener("pointerUp", {
+        isOver: this.isOver,
+        isdown: this.isdown
+      });
+
+    });
+
+    this.on("pointerup", function() {
+      this.isdown = false;
+      if (this.isOver) {
+        this.tint = Constants.button.buttonColor.mouseOver;
+      } else {
+        this.tint = Constants.button.buttonColor.mouseOut;
+      }
+    });
+
+    this.on("pointerover", function() {
+      this.isOver = true;
+      if (this.isdown) {
+        return;
+      }
+      this.tint = Constants.button.buttonColor.mouseOver;
+    });
+
+    this.on("pointerout", function() {
+      //console.log("pointerout");
+
+      this.isOver = false;
+      if (this.isdown) {
+        return;
+      }
+      this.tint = Constants.button.buttonColor.mouseOut;
+    });
+
+  }
+
+  setText(val, style) {
+
+    // Set text to be the value passed as a parameter
+    this.text.text = val;
+    // Set style of text to the style passed as a parameter
+    if (style) {
+      this.text.style = style;
+    } else {
+      this.text.style = new PIXI.TextStyle({
+        fontFamily: 'Arial', // Font Family
+        fontSize: 10, // Font Size
+        //fontStyle: 'italic',// Font Style
+        //fontWeight: 'bold', // Font Weight
+        fill: [Constants.colors.BLACK], // gradient
+        //fill: ['#ffffff', '#F8A9F9'], // gradient
+        //stroke: '#4a1850',
+        //strokeThickness: 5,
+        //dropShadow: true,
+        //dropShadowColor: '#000000',
+        //dropShadowBlur: 4,
+        //dropShadowAngle: Math.PI / 6,
+        //dropShadowDistance: 6,
+        //wordWrap: true,
+        //wordWrapWidth: 150
+      });
+    }
+
   }
 
 }
@@ -2927,7 +3434,7 @@ const GenerateRandomParameters = function() {
   //console.log(parameters);
 
   return parameters;
-}
+};
 
 class Creature {
 

@@ -1,8 +1,8 @@
 /* eslint-disable */
 var config = {
   app: {
-    width: 800,
-    height: 600,
+    width: 2000,
+    height: 1500,
     autoSize: true,
     visual: {
       bgcolor: "0X022a31"

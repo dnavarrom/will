@@ -25,7 +25,6 @@ module.exports = function (grunt) {
                 }
             }
         },
-
         /**
          * Watch for changes to files and automatically reload the page.
          */

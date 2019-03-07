@@ -140,11 +140,11 @@ class Button extends CustomSprite {
     } else {
       this.text.style = new PIXI.TextStyle({
         fontFamily: 'Arial', // Font Family
-        fontSize: 18, // Font Size
+        fontSize: 10, // Font Size
         //fontStyle: 'italic',// Font Style
-        fontWeight: 'bold', // Font Weight
+        //fontWeight: 'bold', // Font Weight
+        fill: [Constants.colors.BLACK], // gradient
         //fill: ['#ffffff', '#F8A9F9'], // gradient
-        fill: ['#ffffff', '#F8A9F9'], // gradient
         //stroke: '#4a1850',
         //strokeThickness: 5,
         //dropShadow: true,

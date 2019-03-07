@@ -56,9 +56,7 @@ var world; //main simulation
 var inGameInformation; //
 var uiControls;
 
-//global : collect Status
-var generationStats = [];
-generationStats.push({ BestsurvivorId: -1, WorsesurvivorId: -1, BestFitness: -1, WorseFitness: -1 });
+
 
 //game loop
 var tick = 0;
@@ -187,7 +185,7 @@ function run(delta) {
     currentTick = currentTick + 10;
 
     if (iteration > GenerationLimit) {
-      evaluateGeneration();
+      world.evaluateGeneration();
       iteration = 0;
 
     }
@@ -210,11 +208,11 @@ function run(delta) {
   world.showLineage();
 
   //Update UI
-  let generationNumber = generationStats.length;
+  let generationNumber = world.generationStats.length;
 
   inGameInformation.updateUi(world.survivorsInfo.length, world.predatorsInfo.length, world.foodInfo.length,
     iteration, generationNumber,
-    generationStats[
+    world.generationStats[
       generationNumber - 1], app.ticker.FPS);
 
   //Update debug information
@@ -237,43 +235,6 @@ function gameLoop(delta) {
 
   // increment the ticker
   tick += 0.1;
-
-}
-
-/**
- * Calculate fitness and evaluate generation
- */
-function evaluateGeneration() {
-
-  var survivorsOrderedInfo = [];
-
-  //ordenado de menor a mayor
-  survivorsOrderedInfo = _.sortBy(_.union(world.survivorsInfo, world.deadSurvivors), "numBugEated");
-
-  let lastIdx = survivorsOrderedInfo.length;
-
-  var thisGen = {
-    BestsurvivorId: 0,
-    WorsesurvivorId: 0,
-    BestFitness: 0,
-    WorseFitness: 0
-  };
-
-  if (lastIdx > 0) {
-    thisGen = {
-      BestsurvivorId: survivorsOrderedInfo[lastIdx - 1].collectStats()
-        .uid,
-      WorsesurvivorId: survivorsOrderedInfo[0].collectStats()
-        .uid,
-      BestFitness: survivorsOrderedInfo[lastIdx - 1].collectStats()
-        .numBugEated,
-      WorseFitness: survivorsOrderedInfo[0].collectStats()
-        .numBugEated
-    };
-  }
-
-  //console.dir(survivorsOrderedInfo);
-  generationStats.push(thisGen);
 
 }
 

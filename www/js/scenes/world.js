@@ -2,6 +2,9 @@
 class World {
   constructor(app, b) {
 
+    //app.stage.filters = [ new PIXI.filters.OldFilmFilter(0)];
+    //app.stage.scale.x = 1.5;
+    //app.stage.scale.y = 1.5;
     // global : create an array to store all the sprites and information
     this.survivorsInfo = [];
     this.childInfo = [];
@@ -20,8 +23,10 @@ class World {
 
     //collect status
     this.deadSurvivors = [];
+    this.generationStats = [];
+    this.generationStats.push({ BestsurvivorId: -1, WorsesurvivorId: -1, BestFitness: -1, WorseFitness: -1 });
 
-    this.survivorsContainer = new PIXI.particles.ParticleContainer(10000, {
+    this.survivorsContainer = new PIXI.Container(10000, {
       scale: true,
       position: true,
       rotation: true,
@@ -230,12 +235,14 @@ class World {
       let opt = {
         PIXI: PIXI,
         dna: population[i],
+        isHumanControlled: false,
         i: i,
         //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
         sprite: SpriteFactory.create("SurvivorSprite", {
             screenWidth: app.screen.width,
             screenHeight: app.screen.height,
-            i: i
+            i: i,
+            isHumanControlled :false
           })
           .getSprite()
       }
@@ -271,12 +278,14 @@ class World {
       let opt = {
         PIXI: PIXI,
         dna: population[i],
+        isHumanControlled: population[i].isHumanControlled,
         i: this.survivorsInfo.length,
         //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
         sprite: SpriteFactory.create("SurvivorSprite", {
             screenWidth: app.screen.width,
             screenHeight: app.screen.height,
-            i: this.survivorsInfo.length
+            i: this.survivorsInfo.length,
+            isHumanControlled : population[i].isHumanControlled
           })
           .getSprite()
       }
@@ -437,6 +446,76 @@ class World {
     }
   }
 
+  /**
+   * Calculate fitness and evaluate generation
+   */
+  evaluateGeneration() {
+
+    var survivorsOrderedInfo = [];
+
+    //ordenado de menor a mayor
+    survivorsOrderedInfo = _.sortBy(_.union(this.survivorsInfo, this.deadSurvivors), "numBugEated");
+
+    let lastIdx = survivorsOrderedInfo.length;
+
+    var thisGen = {
+      BestsurvivorId: 0,
+      WorsesurvivorId: 0,
+      BestFitness: 0,
+      WorseFitness: 0
+    };
+
+    if (lastIdx > 0) {
+      thisGen = {
+        BestsurvivorId: survivorsOrderedInfo[lastIdx - 1].collectStats()
+          .uid,
+        WorsesurvivorId: survivorsOrderedInfo[0].collectStats()
+          .uid,
+        BestFitness: survivorsOrderedInfo[lastIdx - 1].collectStats()
+          .numBugEated,
+        WorseFitness: survivorsOrderedInfo[0].collectStats()
+          .numBugEated
+      };
+    }
+
+    //console.dir(survivorsOrderedInfo);
+    this.generationStats.push(thisGen);
+
+  }
+
+  spawnHumanControlledCreatureHandler() {
+    
+
+    let population = [];
+
+    let opt = {
+      PIXI: PIXI,
+      dna: population[0],
+      isHumanControlled: true,
+      i: this.survivorsInfo.length,
+      //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
+      sprite: SpriteFactory.create("SurvivorSprite", {
+          screenWidth: app.screen.width,
+          screenHeight: app.screen.height,
+          i: this.survivorsInfo.length,
+          isHumanControlled :true
+        })
+        .getSprite()
+    }
+
+    let p = CreatureFactory.create("Survivor", opt);
+
+    this.survivorsInfo.push(p);
+    this.survivorsContainer.addChild(p.sprite);
+    this.addDebugInfo(p);
+    this.addReproductionTargetLine(p);
+    this.addCreatureHudInformation(p);
+
+
+    app.stage.interactive = true;
+
+  }
+
   processSurvivor() {
 
     // iterate through the survivors and find food, move, dodge
@@ -475,6 +554,9 @@ class World {
             let parent2 = this.survivorsInfo.find(o => o.uid == this.survivorsInfo[i].getCurrentMate())
             if (parent2) {
               let son = this.survivorsInfo[i].reproduce(parent2);
+              if (this.survivorsInfo[i].isHumanControlled || son.isHumanControlled) {
+                son.isHumanControlled = true;
+              }
               this.childInfo.push(son);
               this.createNewSurvivors(this.childInfo);
             } else {

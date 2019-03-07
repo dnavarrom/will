@@ -1943,18 +1943,24 @@ class UiControls {
     this.AButton(); //Add Creature
     this.BButton(); //Show Energy
     this.CButton(); //Show Vision Range
-    //this.DButton(); //Show Name
+    this.DButton(); //Show Lineage
+    this.EButton(); //Add human controlled
+    //this.FButton(); //Show Worse
+    this.GButton(); //Add Predator
+
+    this.buttonGroupPositionx = 100;
+    this.buttonGroupPositiony = 150;
 
   }
 
   AButton() {
 
     let opt = {
-      buttonType: Constants.button.buttonType.circleButton,
+      buttonType: Constants.button.buttonType.rectangleButton,
       x: app.screen.width - 100,
-      y: app.screen.height - 50,
-      width: 75,
-      height: 75,
+      y: app.screen.height / 2 - 65,
+      width: 120,
+      height: 25,
       radius: 25,
       name: "button-add-creature",
       event: "addCreature",
@@ -1966,7 +1972,7 @@ class UiControls {
 
     this.aButton = new Button(opt);
 
-    this.aButton.setText("A");
+    this.aButton.setText("Add Creature");
     this.buttons.push(this.aButton);
     app.stage.addChild(this.aButton);
 
@@ -1975,11 +1981,11 @@ class UiControls {
   BButton() {
 
     let opt = {
-      buttonType: Constants.button.buttonType.circleButton,
+      buttonType: Constants.button.buttonType.rectangleButton,
       x: app.screen.width - 100,
-      y: app.screen.height - 110,
-      width: 75,
-      height: 75,
+      y: app.screen.height / 2 + 5,
+      width: 120,
+      height: 25,
       radius: 25,
       name: "button-show-energy-bar",
       event: "showEnergyBar",
@@ -1990,7 +1996,7 @@ class UiControls {
     }
 
     this.bButton = new Button(opt);
-    this.bButton.setText("B");
+    this.bButton.setText("Show Energy Bar");
     this.buttons.push(this.bButton);
     app.stage.addChild(this.bButton);
   }
@@ -1998,11 +2004,11 @@ class UiControls {
   CButton() {
 
     let opt = {
-      buttonType: Constants.button.buttonType.circleButton,
+      buttonType: Constants.button.buttonType.rectangleButton,
       x: app.screen.width - 100,
-      y: app.screen.height - 170,
-      width: 75,
-      height: 75,
+      y: app.screen.height / 2 + 40,
+      width: 120,
+      height: 25,
       radius: 25,
       name: "button-show-vision-range",
       event: "showVisionRange",
@@ -2013,7 +2019,7 @@ class UiControls {
     }
 
     this.cButton = new Button(opt);
-    this.cButton.setText("C");
+    this.cButton.setText("Show Vision Range");
     this.buttons.push(this.cButton);
     app.stage.addChild(this.cButton);
   }
@@ -2021,17 +2027,79 @@ class UiControls {
   DButton() {
 
     let opt = {
-      buttonType: Constants.button.buttonType.circleButton,
+      buttonType: Constants.button.buttonType.rectangleButton,
       x: app.screen.width - 100,
-      y: app.screen.height - 230,
-      width: 75,
-      height: 75,
+      y: app.screen.height / 2 + 75,
+      width: 120,
+      height: 25,
       radius: 25
     }
 
     this.dButton = new Button(opt);
-    this.dButton.setText("D");
+    this.dButton.setText("Show Lineage");
+    this.buttons.push(this.dButton);
     app.stage.addChild(this.dButton);
+  }
+
+  EButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 110,
+      width: 120,
+      height: 25,
+      radius: 25,
+      name: "button-spawn-human-controlled-creature",
+      event: "spawnHumanControlledCreature",
+      eventFunction: function(world) {
+        world.spawnHumanControlledCreatureHandler();
+      }
+    }
+
+    this.eButton = new Button(opt);
+    this.eButton.setText("Spawn Human Controlled");
+    this.buttons.push(this.eButton);
+    app.stage.addChild(this.eButton);
+  }
+
+  FButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 145,
+      width: 120,
+      height: 25,
+      radius: 25
+    }
+
+    this.fButton = new Button(opt);
+    this.fButton.setText("Show Worse Creature");
+    this.buttons.push(this.fButton);
+    app.stage.addChild(this.fButton);
+  }
+
+  GButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 - 30,
+      width: 120,
+      height: 25,
+      radius: 25,
+      name: "button-add-predator",
+      event: "addPredator",
+      eventFunction: function(world) {
+        world.initPredators(1);
+      }
+    }
+
+    this.gButton = new Button(opt);
+    this.gButton.setText("Add Predator");
+    this.buttons.push(this.gButton);
+    app.stage.addChild(this.gButton);
   }
 
   processEvents(data) {
@@ -2073,6 +2141,9 @@ class UiControls {
 class World {
   constructor(app, b) {
 
+    //app.stage.filters = [ new PIXI.filters.OldFilmFilter(0)];
+    //app.stage.scale.x = 1.5;
+    //app.stage.scale.y = 1.5;
     // global : create an array to store all the sprites and information
     this.survivorsInfo = [];
     this.childInfo = [];
@@ -2091,8 +2162,10 @@ class World {
 
     //collect status
     this.deadSurvivors = [];
+    this.generationStats = [];
+    this.generationStats.push({ BestsurvivorId: -1, WorsesurvivorId: -1, BestFitness: -1, WorseFitness: -1 });
 
-    this.survivorsContainer = new PIXI.particles.ParticleContainer(10000, {
+    this.survivorsContainer = new PIXI.Container(10000, {
       scale: true,
       position: true,
       rotation: true,
@@ -2301,12 +2374,14 @@ class World {
       let opt = {
         PIXI: PIXI,
         dna: population[i],
+        isHumanControlled: false,
         i: i,
         //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
         sprite: SpriteFactory.create("SurvivorSprite", {
             screenWidth: app.screen.width,
             screenHeight: app.screen.height,
-            i: i
+            i: i,
+            isHumanControlled :false
           })
           .getSprite()
       }
@@ -2342,12 +2417,14 @@ class World {
       let opt = {
         PIXI: PIXI,
         dna: population[i],
+        isHumanControlled: population[i].isHumanControlled,
         i: this.survivorsInfo.length,
         //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
         sprite: SpriteFactory.create("SurvivorSprite", {
             screenWidth: app.screen.width,
             screenHeight: app.screen.height,
-            i: this.survivorsInfo.length
+            i: this.survivorsInfo.length,
+            isHumanControlled : population[i].isHumanControlled
           })
           .getSprite()
       }
@@ -2508,6 +2585,76 @@ class World {
     }
   }
 
+  /**
+   * Calculate fitness and evaluate generation
+   */
+  evaluateGeneration() {
+
+    var survivorsOrderedInfo = [];
+
+    //ordenado de menor a mayor
+    survivorsOrderedInfo = _.sortBy(_.union(this.survivorsInfo, this.deadSurvivors), "numBugEated");
+
+    let lastIdx = survivorsOrderedInfo.length;
+
+    var thisGen = {
+      BestsurvivorId: 0,
+      WorsesurvivorId: 0,
+      BestFitness: 0,
+      WorseFitness: 0
+    };
+
+    if (lastIdx > 0) {
+      thisGen = {
+        BestsurvivorId: survivorsOrderedInfo[lastIdx - 1].collectStats()
+          .uid,
+        WorsesurvivorId: survivorsOrderedInfo[0].collectStats()
+          .uid,
+        BestFitness: survivorsOrderedInfo[lastIdx - 1].collectStats()
+          .numBugEated,
+        WorseFitness: survivorsOrderedInfo[0].collectStats()
+          .numBugEated
+      };
+    }
+
+    //console.dir(survivorsOrderedInfo);
+    this.generationStats.push(thisGen);
+
+  }
+
+  spawnHumanControlledCreatureHandler() {
+    
+
+    let population = [];
+
+    let opt = {
+      PIXI: PIXI,
+      dna: population[0],
+      isHumanControlled: true,
+      i: this.survivorsInfo.length,
+      //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
+      sprite: SpriteFactory.create("SurvivorSprite", {
+          screenWidth: app.screen.width,
+          screenHeight: app.screen.height,
+          i: this.survivorsInfo.length,
+          isHumanControlled :true
+        })
+        .getSprite()
+    }
+
+    let p = CreatureFactory.create("Survivor", opt);
+
+    this.survivorsInfo.push(p);
+    this.survivorsContainer.addChild(p.sprite);
+    this.addDebugInfo(p);
+    this.addReproductionTargetLine(p);
+    this.addCreatureHudInformation(p);
+
+
+    app.stage.interactive = true;
+
+  }
+
   processSurvivor() {
 
     // iterate through the survivors and find food, move, dodge
@@ -2546,6 +2693,9 @@ class World {
             let parent2 = this.survivorsInfo.find(o => o.uid == this.survivorsInfo[i].getCurrentMate())
             if (parent2) {
               let son = this.survivorsInfo[i].reproduce(parent2);
+              if (this.survivorsInfo[i].isHumanControlled || son.isHumanControlled) {
+                son.isHumanControlled = true;
+              }
               this.childInfo.push(son);
               this.createNewSurvivors(this.childInfo);
             } else {
@@ -2847,8 +2997,8 @@ const SpriteFactory = {
 /* eslint-disable */
 var config = {
   app: {
-    width: 800,
-    height: 600,
+    width: 2000,
+    height: 1500,
     autoSize: true,
     visual: {
       bgcolor: "0X022a31"
@@ -2905,7 +3055,9 @@ const Constants = {
       LIGHTGREY: 0xD3D3D3,
       WHITE: 0XFFFFFF,
       GREEN: 0x00FF00,
-      ORANGE: 0xFC6600
+      ORANGE: 0xFC6600,
+      BLACK : 0X000000,
+      YELLOW : 0XFFFF00	
     },
     simulationStates: {
       RUN: "run",
@@ -2919,9 +3071,9 @@ const Constants = {
         circleButton: 2
       },
       buttonColor : {
-        mouseOver: 0x000ff,
+        mouseOver: 0XCC9999,
         mouseOut: 0XFFFFFF,
-        click: 0xf91800
+        click: 0XCC6666
       }
     }
   }
@@ -3174,7 +3326,10 @@ class SurvivorSprite extends CustomSprite {
     this.appScreenWidth = opt.screenWidth;
     this.appScreenHeight = opt.screenHeight;
     this.idx = opt.i;
+    this.isHumanControlled = (  opt.isHumanControlled && opt.isHumanControlled == true) ? true : false;
+
     this.setParameters();
+
     super.setBehavior();
   }
 
@@ -3188,12 +3343,16 @@ class SurvivorSprite extends CustomSprite {
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
 
+    if (this.isHumanControlled) {
+      this.sprite.tint = Constants.colors.YELLOW;
+      this.sprite.filters = [new PIXI.filters.GlowFilter(5, 2, 1, Constants.colors.YELLOW, 0.5)];
+    }
+    else {
+      this.sprite.filters = [new PIXI.filters.GlowFilter(5, 2, 1, Constants.colors.WHITE, 0.5)];
+    }
+
     
   }
-
-  
-
-
 }
 
 /* eslint-disable */
@@ -3338,11 +3497,11 @@ class Button extends CustomSprite {
     } else {
       this.text.style = new PIXI.TextStyle({
         fontFamily: 'Arial', // Font Family
-        fontSize: 18, // Font Size
+        fontSize: 10, // Font Size
         //fontStyle: 'italic',// Font Style
-        fontWeight: 'bold', // Font Weight
+        //fontWeight: 'bold', // Font Weight
+        fill: [Constants.colors.BLACK], // gradient
         //fill: ['#ffffff', '#F8A9F9'], // gradient
-        fill: ['#ffffff', '#F8A9F9'], // gradient
         //stroke: '#4a1850',
         //strokeThickness: 5,
         //dropShadow: true,
@@ -3425,6 +3584,7 @@ class Creature {
     this.isDead = false;
     this.isCopuling = false;
     this.isFindingMate = false; //quiere follar
+    this.isHumanControlled = opt.isHumanControlled;
 
     //counters
     this.reproductionTimer = 0;
@@ -3662,6 +3822,9 @@ class Survivor extends Creature {
 
     //checkear la comida mas cercana
 
+    if (this.isHumanControlled)
+      return;
+
     var nearestFoodIdx;
     var nearestFoodDistance = 1000;
     var angle;
@@ -3725,16 +3888,36 @@ class Survivor extends Creature {
 
   move() {
 
-    if (!this.reproductionStatus.isCopuling)
-      super.move();
-    else {
+    if (!this.reproductionStatus.isCopuling) {
+      if (this.isHumanControlled) {
+        let mousePosition = app.renderer.plugins.interaction.mouse.global;
+        let r1 = {
+          x : mousePosition.x,
+          y : mousePosition.y
+        };
+  
+        this.setDirection(helper.getAngleBetweenSprites(r1, this.sprite));
+        this.sprite.rotation = this.sprite.direction + Math.PI/2;
+        
+        //let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
+        //let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
+        let x = this.sprite.x + Math.cos(this.sprite.direction) * this.speed;
+        let y = this.sprite.y + Math.sin(this.sprite.direction) * this.speed;
 
-      this.sprite.direction += 0.1;
-      this.sprite.rotation = -this.sprite.direction + Math.PI;
-      let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
-      let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
-      this.setPosition(x, y);
+        this.setPosition(x, y);
+      }
+      else  {
+      super.move();
+      }
     }
+    else {
+        this.sprite.direction += 0.1;
+        this.sprite.rotation = -this.sprite.direction + Math.PI;
+        let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
+        let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
+        this.setPosition(x, y);
+      }
+    
   }
 
   startCopuling() {
@@ -3784,12 +3967,14 @@ class Survivor extends Creature {
   }
 
   setColorByAge() {
-    if (this.livingTime < config.creature.adultAge) {
-      this.sprite.tint = Constants.colors.WHITE;
-    } else if (this.livingTime >= config.creature.elderAge) {
-      this.sprite.tint = Constants.colors.GREEN;
-    } else {
-      this.sprite.tint = Constants.colors.RED;
+    if (!this.isHumanControlled) {
+      if (this.livingTime < config.creature.adultAge) {
+        this.sprite.tint = Constants.colors.WHITE;
+      } else if (this.livingTime >= config.creature.elderAge) {
+        this.sprite.tint = Constants.colors.GREEN;
+      } else {
+        this.sprite.tint = Constants.colors.RED;
+      }
     }
   }
 
@@ -3797,6 +3982,10 @@ class Survivor extends Creature {
    * 
    */
   findMate(survivorInfo) {
+
+    if (this.isHumanControlled)
+      return;
+
     var nearestSurvivorUid = -1;
     var nearestSurvivorDistance = 1000;
     var mateFound = 0;
@@ -3993,6 +4182,10 @@ class Survivor extends Creature {
    * @param predator : predator info
    */
   evadePredator(predator) {
+
+    if (this.isHumanControlled)
+      return;
+
     let dist = helper.CheckDistanceBetweenSprites(this.sprite, predator.sprite);
     if (dist.distance < this.visionRange) {
       if (this.isDodging == false) {

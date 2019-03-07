@@ -8,18 +8,24 @@ class UiControls {
     this.AButton(); //Add Creature
     this.BButton(); //Show Energy
     this.CButton(); //Show Vision Range
-    //this.DButton(); //Show Name
+    this.DButton(); //Show Lineage
+    this.EButton(); //Add human controlled
+    //this.FButton(); //Show Worse
+    this.GButton(); //Add Predator
+
+    this.buttonGroupPositionx = 100;
+    this.buttonGroupPositiony = 150;
 
   }
 
   AButton() {
 
     let opt = {
-      buttonType: Constants.button.buttonType.circleButton,
+      buttonType: Constants.button.buttonType.rectangleButton,
       x: app.screen.width - 100,
-      y: app.screen.height - 50,
-      width: 75,
-      height: 75,
+      y: app.screen.height / 2 - 65,
+      width: 120,
+      height: 25,
       radius: 25,
       name: "button-add-creature",
       event: "addCreature",
@@ -31,7 +37,7 @@ class UiControls {
 
     this.aButton = new Button(opt);
 
-    this.aButton.setText("A");
+    this.aButton.setText("Add Creature");
     this.buttons.push(this.aButton);
     app.stage.addChild(this.aButton);
 
@@ -40,11 +46,11 @@ class UiControls {
   BButton() {
 
     let opt = {
-      buttonType: Constants.button.buttonType.circleButton,
+      buttonType: Constants.button.buttonType.rectangleButton,
       x: app.screen.width - 100,
-      y: app.screen.height - 110,
-      width: 75,
-      height: 75,
+      y: app.screen.height / 2 + 5,
+      width: 120,
+      height: 25,
       radius: 25,
       name: "button-show-energy-bar",
       event: "showEnergyBar",
@@ -55,7 +61,7 @@ class UiControls {
     }
 
     this.bButton = new Button(opt);
-    this.bButton.setText("B");
+    this.bButton.setText("Show Energy Bar");
     this.buttons.push(this.bButton);
     app.stage.addChild(this.bButton);
   }
@@ -63,11 +69,11 @@ class UiControls {
   CButton() {
 
     let opt = {
-      buttonType: Constants.button.buttonType.circleButton,
+      buttonType: Constants.button.buttonType.rectangleButton,
       x: app.screen.width - 100,
-      y: app.screen.height - 170,
-      width: 75,
-      height: 75,
+      y: app.screen.height / 2 + 40,
+      width: 120,
+      height: 25,
       radius: 25,
       name: "button-show-vision-range",
       event: "showVisionRange",
@@ -78,7 +84,7 @@ class UiControls {
     }
 
     this.cButton = new Button(opt);
-    this.cButton.setText("C");
+    this.cButton.setText("Show Vision Range");
     this.buttons.push(this.cButton);
     app.stage.addChild(this.cButton);
   }
@@ -86,17 +92,79 @@ class UiControls {
   DButton() {
 
     let opt = {
-      buttonType: Constants.button.buttonType.circleButton,
+      buttonType: Constants.button.buttonType.rectangleButton,
       x: app.screen.width - 100,
-      y: app.screen.height - 230,
-      width: 75,
-      height: 75,
+      y: app.screen.height / 2 + 75,
+      width: 120,
+      height: 25,
       radius: 25
     }
 
     this.dButton = new Button(opt);
-    this.dButton.setText("D");
+    this.dButton.setText("Show Lineage");
+    this.buttons.push(this.dButton);
     app.stage.addChild(this.dButton);
+  }
+
+  EButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 110,
+      width: 120,
+      height: 25,
+      radius: 25,
+      name: "button-spawn-human-controlled-creature",
+      event: "spawnHumanControlledCreature",
+      eventFunction: function(world) {
+        world.spawnHumanControlledCreatureHandler();
+      }
+    }
+
+    this.eButton = new Button(opt);
+    this.eButton.setText("Spawn Human Controlled");
+    this.buttons.push(this.eButton);
+    app.stage.addChild(this.eButton);
+  }
+
+  FButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 + 145,
+      width: 120,
+      height: 25,
+      radius: 25
+    }
+
+    this.fButton = new Button(opt);
+    this.fButton.setText("Show Worse Creature");
+    this.buttons.push(this.fButton);
+    app.stage.addChild(this.fButton);
+  }
+
+  GButton() {
+
+    let opt = {
+      buttonType: Constants.button.buttonType.rectangleButton,
+      x: app.screen.width - 100,
+      y: app.screen.height / 2 - 30,
+      width: 120,
+      height: 25,
+      radius: 25,
+      name: "button-add-predator",
+      event: "addPredator",
+      eventFunction: function(world) {
+        world.initPredators(1);
+      }
+    }
+
+    this.gButton = new Button(opt);
+    this.gButton.setText("Add Predator");
+    this.buttons.push(this.gButton);
+    app.stage.addChild(this.gButton);
   }
 
   processEvents(data) {

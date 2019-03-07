@@ -18,7 +18,9 @@ const Constants = {
       LIGHTGREY: 0xD3D3D3,
       WHITE: 0XFFFFFF,
       GREEN: 0x00FF00,
-      ORANGE: 0xFC6600
+      ORANGE: 0xFC6600,
+      BLACK : 0X000000,
+      YELLOW : 0XFFFF00	
     },
     simulationStates: {
       RUN: "run",
@@ -32,9 +34,9 @@ const Constants = {
         circleButton: 2
       },
       buttonColor : {
-        mouseOver: 0x000ff,
+        mouseOver: 0XCC9999,
         mouseOut: 0XFFFFFF,
-        click: 0xf91800
+        click: 0XCC6666
       }
     }
   }

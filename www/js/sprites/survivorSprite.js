@@ -29,7 +29,10 @@ class SurvivorSprite extends CustomSprite {
     this.appScreenWidth = opt.screenWidth;
     this.appScreenHeight = opt.screenHeight;
     this.idx = opt.i;
+    this.isHumanControlled = (  opt.isHumanControlled && opt.isHumanControlled == true) ? true : false;
+
     this.setParameters();
+
     super.setBehavior();
   }
 
@@ -43,10 +46,14 @@ class SurvivorSprite extends CustomSprite {
     this.sprite.appScreenWidth = this.appScreenWidth;
     this.sprite.appScreenHeight = this.appScreenHeight;
 
+    if (this.isHumanControlled) {
+      this.sprite.tint = Constants.colors.YELLOW;
+      this.sprite.filters = [new PIXI.filters.GlowFilter(5, 2, 1, Constants.colors.YELLOW, 0.5)];
+    }
+    else {
+      this.sprite.filters = [new PIXI.filters.GlowFilter(5, 2, 1, Constants.colors.WHITE, 0.5)];
+    }
+
     
   }
-
-  
-
-
 }

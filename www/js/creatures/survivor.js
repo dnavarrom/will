@@ -24,6 +24,9 @@ class Survivor extends Creature {
 
     //checkear la comida mas cercana
 
+    if (this.isHumanControlled)
+      return;
+
     var nearestFoodIdx;
     var nearestFoodDistance = 1000;
     var angle;
@@ -87,16 +90,36 @@ class Survivor extends Creature {
 
   move() {
 
-    if (!this.reproductionStatus.isCopuling)
-      super.move();
-    else {
+    if (!this.reproductionStatus.isCopuling) {
+      if (this.isHumanControlled) {
+        let mousePosition = app.renderer.plugins.interaction.mouse.global;
+        let r1 = {
+          x : mousePosition.x,
+          y : mousePosition.y
+        };
+  
+        this.setDirection(helper.getAngleBetweenSprites(r1, this.sprite));
+        this.sprite.rotation = this.sprite.direction + Math.PI/2;
+        
+        //let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
+        //let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
+        let x = this.sprite.x + Math.cos(this.sprite.direction) * this.speed;
+        let y = this.sprite.y + Math.sin(this.sprite.direction) * this.speed;
 
-      this.sprite.direction += 0.1;
-      this.sprite.rotation = -this.sprite.direction + Math.PI;
-      let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
-      let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
-      this.setPosition(x, y);
+        this.setPosition(x, y);
+      }
+      else  {
+      super.move();
+      }
     }
+    else {
+        this.sprite.direction += 0.1;
+        this.sprite.rotation = -this.sprite.direction + Math.PI;
+        let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
+        let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
+        this.setPosition(x, y);
+      }
+    
   }
 
   startCopuling() {
@@ -146,12 +169,14 @@ class Survivor extends Creature {
   }
 
   setColorByAge() {
-    if (this.livingTime < config.creature.adultAge) {
-      this.sprite.tint = Constants.colors.WHITE;
-    } else if (this.livingTime >= config.creature.elderAge) {
-      this.sprite.tint = Constants.colors.GREEN;
-    } else {
-      this.sprite.tint = Constants.colors.RED;
+    if (!this.isHumanControlled) {
+      if (this.livingTime < config.creature.adultAge) {
+        this.sprite.tint = Constants.colors.WHITE;
+      } else if (this.livingTime >= config.creature.elderAge) {
+        this.sprite.tint = Constants.colors.GREEN;
+      } else {
+        this.sprite.tint = Constants.colors.RED;
+      }
     }
   }
 
@@ -159,6 +184,10 @@ class Survivor extends Creature {
    * 
    */
   findMate(survivorInfo) {
+
+    if (this.isHumanControlled)
+      return;
+
     var nearestSurvivorUid = -1;
     var nearestSurvivorDistance = 1000;
     var mateFound = 0;
@@ -355,6 +384,10 @@ class Survivor extends Creature {
    * @param predator : predator info
    */
   evadePredator(predator) {
+
+    if (this.isHumanControlled)
+      return;
+
     let dist = helper.CheckDistanceBetweenSprites(this.sprite, predator.sprite);
     if (dist.distance < this.visionRange) {
       if (this.isDodging == false) {
