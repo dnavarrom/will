@@ -13,6 +13,7 @@ class World {
     this.targetMateLineInfo = [];
     this.debugInfo = [];
     this.creatureHudInfo = [];
+    this.bestSurvivorInfo = [];
 
     this.b = b; //bump
 
@@ -26,15 +27,28 @@ class World {
     this.generationStats = [];
     this.generationStats.push({ BestsurvivorId: -1, WorsesurvivorId: -1, BestFitness: -1, WorseFitness: -1 });
 
-    this.survivorsContainer = new PIXI.Container(10000, {
-      scale: true,
-      position: true,
-      rotation: true,
-      uvs: true,
-      alpha: true
-    });
 
-    app.stage.addChild(this.survivorsContainer);
+    if (config.app.highendGPU) {
+      this.survivorsContainer = new PIXI.Container(10000, {
+        scale: true,
+        position: true,
+        rotation: true,
+        uvs: true,
+        alpha: true
+      });
+    }
+    else
+    {
+      this.survivorsContainer = new PIXI.ParticleContainer(10000, {
+        scale: true,
+        position: true,
+        rotation: true,
+        uvs: true,
+        alpha: true
+      });
+    }
+
+    //app.stage.addChild(this.survivorsContainer);
 
     this.predatorsContainer = new PIXI.particles.ParticleContainer(100, {
       scale: true,
@@ -44,7 +58,7 @@ class World {
       alpha: true
     });
 
-    app.stage.addChild(this.predatorsContainer);
+    //app.stage.addChild(this.predatorsContainer);
 
     this.foodContainer = new PIXI.particles.ParticleContainer(1000, {
       scale: true,
@@ -54,7 +68,7 @@ class World {
       alpha: true
     });
 
-    app.stage.addChild(this.foodContainer);
+    //app.stage.addChild(this.foodContainer);
 
     this.debugContainer = new PIXI.particles.ParticleContainer(1000, {
       scale: true,
@@ -64,7 +78,7 @@ class World {
       alpha: true
     });
 
-    app.stage.addChild(this.debugContainer);
+    //app.stage.addChild(this.debugContainer);
 
     this.creatureHudContainer = new PIXI.Container(1000, {
       scale: true,
@@ -73,10 +87,11 @@ class World {
       uvs: true,
       alpha: true
     })
-    app.stage.addChild(this.creatureHudContainer);
+    //app.stage.addChild(this.creatureHudContainer);
+
     this.showEnergyBar = false;
 
-    this.targetMateLineContainer = new PIXI.Container(1000, {
+    this.targetMateLineContainer = new PIXI.ParticleContainer(1000, {
       scale: true,
       position: true,
       rotation: true,
@@ -84,7 +99,15 @@ class World {
       alpha: true
     });
 
-    app.stage.addChild(this.targetMateLineContainer);
+    this.bestSurvivorCointainer = new PIXI.ParticleContainer(1000, {
+      scale: true,
+      position: true,
+      rotation: true,
+      uvs: true,
+      alpha: true
+    });
+
+    //app.stage.addChild(this.targetMateLineContainer);
 
     this.containers = {
       predatorsContainer: this.predatorsContainer,
@@ -92,7 +115,8 @@ class World {
       foodContainer: this.foodContainer,
       debugContainer: this.debugContainer,
       creatureHudContainer: this.creatureHudContainer,
-      targetMateLineContainer: this.targetMateLineContainer
+      targetMateLineContainer: this.targetMateLineContainer,
+      bestSurvivorCointainer : this.bestSurvivorCointainer
     };
 
     this.worldInfo = {
@@ -103,8 +127,34 @@ class World {
       debugInfo: this.debugInfo,
       creatureHudInfo: this.creatureHudInfo,
       targetMateLineInfo: this.targetMateLineInfo,
+      bestSurvivorInfo : this.bestSurvivorInfo,
       deadSurvivors: this.deadSurvivors
     };
+
+    this.viewport = new Viewport.Viewport({
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight,
+      worldWidth: config.app.width,
+      worldHeight: config.app.height,
+  
+      interaction: app.renderer.plugins.interaction
+    });
+
+
+    this.viewport.addChild(this.containers.survivorsContainer);
+    this.viewport.addChild(this.containers.foodContainer);
+    this.viewport.addChild(this.containers.predatorsContainer);
+    this.viewport.addChild(this.containers.creatureHudContainer);
+    this.viewport.addChild(this.containers.bestSurvivorCointainer);
+    
+    this.viewport
+    .drag()
+    .pinch()
+    .wheel()
+    .decelerate()
+
+    app.stage.addChild(this.viewport);
+    this.viewport.setZoom(0.8,true);
 
   }
 
@@ -143,8 +193,10 @@ class World {
 
       let opt = {
         i: i,
-        screenWidth: app.screen.width,
-        screenHeight: app.screen.height
+        //screenWidth: app.screen.width,
+        //screenHeight: app.screen.height
+        screenWidth: config.app.width,//app.screen.width,
+        screenHeight: config.app.height//app.screen.height,
       }
 
       let obj = SpriteFactory.create("FoodSprite", opt);
@@ -239,8 +291,8 @@ class World {
         i: i,
         //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
         sprite: SpriteFactory.create("SurvivorSprite", {
-            screenWidth: app.screen.width,
-            screenHeight: app.screen.height,
+            screenWidth: config.app.width,//app.screen.width,
+            screenHeight: config.app.height,//app.screen.height,
             i: i,
             isHumanControlled :false
           })
@@ -295,7 +347,6 @@ class World {
       this.survivorsInfo.push(p);
       this.survivorsContainer.addChild(p.sprite);
       //add children uid to parents childrens list
-      //TODO : REPARAR ESTO (ya no se usa la property index).
       this.survivorsInfo.find(o => o.uid == opt.dna.parent1Uid)
         .addChildren(p.uid);
       this.survivorsInfo.find(o => o.uid == opt.dna.parent2Uid)
@@ -307,6 +358,11 @@ class World {
     }
   }
 
+  
+/**
+ * Add Debug information to screen
+ * @param {Survivor} survivor 
+ */
   addDebugInfo(survivor) {
 
     //Circle
@@ -323,6 +379,30 @@ class World {
     this.debugInfo.push(img);
   }
 
+    //TODO : no uso estas variables.. raro lo que pensé.
+    updateDebugInfo(op, survivor) {
+
+      for (let i = 0; i < this.debugInfo.length; i++) {
+        let surv = this.survivorsInfo.find(o => o.uid == this.debugInfo[i].uid);
+        if (surv) {
+          this.debugInfo[i].x = surv.sprite.x;
+          this.debugInfo[i].y = surv.sprite.y;
+        }
+      }
+  
+      if (debugModeOn) {
+        this.debugContainer.alpha = 0.3;
+        this.targetMateLineContainer.alpha = 0.3;
+      } else {
+        this.debugContainer.alpha = 0;
+        this.targetMateLineContainer.alpha = 0;
+  
+      }
+  
+    }
+  
+    /****** CREATURE HUD */
+
   addCreatureHudInformation(survivor) {
 
     let hudTextInfo = new EnergyBarSprite({ app: app, survivor: survivor });
@@ -330,6 +410,35 @@ class World {
     this.creatureHudInfo.push(hudTextInfo);
   }
 
+  updateCreatureHudInformation() {
+
+    if (this.showEnergyBar) {
+    for (let i = 0; i < this.creatureHudInfo.length; i++) {
+      let surv = this.survivorsInfo.find(o => o.uid == this.creatureHudInfo[i].uid);
+      if (surv) {
+        this.creatureHudInfo[i].setEnergyBar(surv, helper.getEnergyBar(surv.collectStats()
+          .energy));
+      }
+    }
+  }
+    /*
+    if (debugModeOn) {
+      this.creatureHudContainer.alpha = 0.5;
+    } else {
+      this.creatureHudContainer.alpha = 0;
+    }
+    */
+
+    if (this.showEnergyBar)
+      this.creatureHudContainer.alpha = 0.5;
+    else
+      this.creatureHudContainer.alpha = 0;
+
+  }
+
+  /**** END CREATURE HUD */
+
+  /**** LINEAGE */
   addReproductionTargetLine(survivor) {
     let graph = new PIXI.Graphics();
     graph.uid = survivor.uid;
@@ -356,6 +465,17 @@ class World {
       }
     }
   }
+
+  clearChildrenTreeLine(survivor) {
+    let currentLine = this.targetMateLineInfo.find(o => o.uid == survivor.uid);
+    if (currentLine) {
+      currentLine.clear();
+      this.targetMateLineContainer.removeChild(currentLine);
+      this.targetMateLineInfo = this.targetMateLineInfo.filter(o => o.uid !== currentLine.uid);
+    }
+  }
+
+  /**** END LINEAGE */
 
   /**
    * Process food sprites and events
@@ -390,7 +510,7 @@ class World {
   }
 
   /**
-   * Predators logic
+   * Process Predator logic and events
    */
   processPredator() {
 
@@ -423,99 +543,8 @@ class World {
   }
 
   /**
-   * Remove survivor from simulation arrays (PIXI containers and logic arrays)
-   * @param {survivor} survivor object 
+   * Process Survivor logic and events
    */
-  killSurvivor(survivor) {
-    this.survivorsContainer.removeChild(survivor.sprite);
-    this.debugContainer.removeChild(this.debugInfo.find(o => o.uid == survivor.uid));
-    this.creatureHudContainer.removeChild(this.creatureHudInfo.find(o => o.uid == survivor.uid));
-    this.deadSurvivors.push(this.survivorsInfo.find(o => o.uid == survivor.uid));
-    this.survivorsInfo = this.survivorsInfo.filter(o => o.uid !== survivor.uid)
-    this.debugInfo = this.debugInfo.filter(o => o.uid !== survivor.uid);
-    this.creatureHudInfo = this.creatureHudInfo.filter(o => o.uid !== survivor.uid);
-    this.clearChildrenTreeLine(survivor);
-  }
-
-  clearChildrenTreeLine(survivor) {
-    let currentLine = this.targetMateLineInfo.find(o => o.uid == survivor.uid);
-    if (currentLine) {
-      currentLine.clear();
-      this.targetMateLineContainer.removeChild(currentLine);
-      this.targetMateLineInfo = this.targetMateLineInfo.filter(o => o.uid !== currentLine.uid);
-    }
-  }
-
-  /**
-   * Calculate fitness and evaluate generation
-   */
-  evaluateGeneration() {
-
-    var survivorsOrderedInfo = [];
-
-    //ordenado de menor a mayor
-    survivorsOrderedInfo = _.sortBy(_.union(this.survivorsInfo, this.deadSurvivors), "numBugEated");
-
-    let lastIdx = survivorsOrderedInfo.length;
-
-    var thisGen = {
-      BestsurvivorId: 0,
-      WorsesurvivorId: 0,
-      BestFitness: 0,
-      WorseFitness: 0
-    };
-
-    if (lastIdx > 0) {
-      thisGen = {
-        BestsurvivorId: survivorsOrderedInfo[lastIdx - 1].collectStats()
-          .uid,
-        WorsesurvivorId: survivorsOrderedInfo[0].collectStats()
-          .uid,
-        BestFitness: survivorsOrderedInfo[lastIdx - 1].collectStats()
-          .numBugEated,
-        WorseFitness: survivorsOrderedInfo[0].collectStats()
-          .numBugEated
-      };
-    }
-
-    //console.dir(survivorsOrderedInfo);
-    this.generationStats.push(thisGen);
-
-  }
-
-  spawnHumanControlledCreatureHandler() {
-    
-
-    let population = [];
-
-    let opt = {
-      PIXI: PIXI,
-      dna: population[0],
-      isHumanControlled: true,
-      i: this.survivorsInfo.length,
-      //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
-      sprite: SpriteFactory.create("SurvivorSprite", {
-          screenWidth: app.screen.width,
-          screenHeight: app.screen.height,
-          i: this.survivorsInfo.length,
-          isHumanControlled :true
-        })
-        .getSprite()
-    }
-
-    let p = CreatureFactory.create("Survivor", opt);
-
-    this.survivorsInfo.push(p);
-    this.survivorsContainer.addChild(p.sprite);
-    this.addDebugInfo(p);
-    this.addReproductionTargetLine(p);
-    this.addCreatureHudInformation(p);
-
-
-    app.stage.interactive = true;
-
-  }
-
   processSurvivor() {
 
     // iterate through the survivors and find food, move, dodge
@@ -530,7 +559,27 @@ class World {
          * FIRST PRIORITY : Find Food and survive
          */
         if (!this.survivorsInfo[i].reproductionStatus.isCopuling) {
-          this.survivorsInfo[i].findFood(this.foodInfo);
+          let nearFoodArray = this.survivorsInfo[i].findFood(this.foodInfo);
+
+          //sobreviviente comio?
+          if (nearFoodArray.length > 0) {
+            let survivorEating = this.b.hit(
+              this.survivorsInfo[i].sprite, nearFoodArray, false, false, false,
+              function(collision, food) {
+                if (collision != undefined) {  
+                  if (!food.eated) {
+                    food.eated = true;
+                    this.foodContainer.removeChild(food);
+                    //this.foodInfo.splice(food.idx, 1);
+                    this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
+                    this.survivorsInfo[i].eat();
+                    //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
+                  }
+              }
+              }.bind(this)
+            );
+          }
+
         }
 
         //check for predator and change direction, it will cancel other movements
@@ -600,22 +649,6 @@ class World {
         //check for border colission and change direction
         this.survivorsInfo[i].setDirection(this.survivorsInfo[i].sprite.handleBorderCollition());
 
-        //sobreviviente comio?
-
-        let survivorEating = this.b.hit(
-          this.survivorsInfo[i].sprite, this.foodInfo, false, false, false,
-          function(collision, food) {
-            if (!food.eated) {
-              food.eated = true;
-              this.foodContainer.removeChild(food);
-              //this.foodInfo.splice(food.idx, 1);
-              this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
-              this.survivorsInfo[i].eat();
-              //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
-            }
-          }.bind(this)
-        );
-
         //Move
         this.survivorsInfo[i].move();
 
@@ -628,27 +661,146 @@ class World {
 
   }
 
-  //TODO : no uso estas variables.. raro lo que pensé.
-  updateDebugInfo(op, survivor) {
+  /**
+   * Remove survivor from simulation arrays (PIXI containers and logic arrays)
+   * @param {survivor} survivor object 
+   */
+  killSurvivor(survivor) {
+    this.survivorsContainer.removeChild(survivor.sprite);
+    this.debugContainer.removeChild(this.debugInfo.find(o => o.uid == survivor.uid));
+    this.creatureHudContainer.removeChild(this.creatureHudInfo.find(o => o.uid == survivor.uid));
+    this.bestSurvivorCointainer.removeChild(survivor.sprite);
 
-    for (let i = 0; i < this.debugInfo.length; i++) {
-      let surv = this.survivorsInfo.find(o => o.uid == this.debugInfo[i].uid);
-      if (surv) {
-        this.debugInfo[i].x = surv.sprite.x;
-        this.debugInfo[i].y = surv.sprite.y;
-      }
+    this.deadSurvivors.push(this.survivorsInfo.find(o => o.uid == survivor.uid));
+    this.survivorsInfo = this.survivorsInfo.filter(o => o.uid !== survivor.uid)
+    this.debugInfo = this.debugInfo.filter(o => o.uid !== survivor.uid);
+    this.bestSurvivorInfo = this.bestSurvivorInfo.filter(o => o.uid !== survivor.uid);
+    this.creatureHudInfo = this.creatureHudInfo.filter(o => o.uid !== survivor.uid);
+    this.clearChildrenTreeLine(survivor);
+  }
+
+  /**
+   * Calculate fitness and evaluate generation
+   */
+  evaluateGeneration() {
+
+    var survivorsOrderedInfo = [];
+
+    //ordenado de menor a mayor
+    survivorsOrderedInfo = _.sortBy(_.union(this.survivorsInfo, this.deadSurvivors), "numBugEated");
+    //survivorsOrderedInfo = _.sortBy(this.survivorsInfo, "numBugEated");
+
+    let lastIdx = survivorsOrderedInfo.length;
+
+    var thisGen = {
+      BestsurvivorId: 0,
+      WorsesurvivorId: 0,
+      BestFitness: 0,
+      WorseFitness: 0
+    };
+
+    if (lastIdx > 0) {
+      thisGen = {
+        BestsurvivorId: survivorsOrderedInfo[lastIdx - 1].collectStats()
+          .uid,
+        WorsesurvivorId: survivorsOrderedInfo[0].collectStats()
+          .uid,
+        BestFitness: survivorsOrderedInfo[lastIdx - 1].collectStats()
+          .numBugEated,
+        WorseFitness: survivorsOrderedInfo[0].collectStats()
+          .numBugEated
+      };
+      //showBest
+      let srv = this.survivorsInfo.find(o=>o.uid == thisGen.BestsurvivorId);
+      if (srv)
+        this.showBestSurvivor(srv);
     }
 
-    if (debugModeOn) {
-      this.debugContainer.alpha = 0.3;
-      this.targetMateLineContainer.alpha = 0.3;
-    } else {
-      this.debugContainer.alpha = 0;
-      this.targetMateLineContainer.alpha = 0;
-
-    }
+    //console.dir(survivorsOrderedInfo);
+    this.generationStats.push(thisGen);
 
   }
+
+  updateBestSurvivorInformation() {
+
+    if (this.bestSurvivorInfo.length > 0) {
+      let lastIdx = this.bestSurvivorInfo.length - 1;
+      let surv = this.survivorsInfo.find(o => o.uid == this.bestSurvivorInfo[lastIdx].uid);
+      if (surv) {
+        this.bestSurvivorInfo[lastIdx].x = surv.sprite.x;
+        this.bestSurvivorInfo[lastIdx].y = surv.sprite.y;
+      }
+    }
+    
+  }
+
+  /** to show best Survivor */
+  showBestSurvivor(survivor) {
+    let srv = this.bestSurvivorInfo.find(o=> o.uid == survivor.uid);
+    if (srv == undefined) {
+      let spt = SpriteFactory.create("SelectedSprite", {
+      uid : survivor.uid,
+      screenWidth: app.screen.width,
+      screenHeight: app.screen.height,
+      radius : 12,
+      x : survivor.sprite.x,
+      y : survivor.sprite.y,
+      i: this.bestSurvivorInfo.length,
+      selectionType : Constants.selectionTypes.CIRCLE,
+      hasText : true,
+      text : "best"
+    });
+
+    for (let i= 0; i<this.bestSurvivorInfo.length; i++) {
+      let rem = this.bestSurvivorCointainer.removeChild(this.bestSurvivorInfo[i]);
+      if (rem)
+        console.log("Removed : " + rem.uid);
+    }
+    
+    
+    //this.bestSurvivorInfo = [];
+    this.bestSurvivorInfo.push(spt);
+    this.bestSurvivorCointainer.addChild(spt);
+    
+  }
+    
+  }
+
+  spawnHumanControlledCreatureHandler() {
+    
+
+    let population = [];
+
+    let opt = {
+      PIXI: PIXI,
+      dna: population[0],
+      isHumanControlled: true,
+      i: this.survivorsInfo.length,
+      //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
+      sprite: SpriteFactory.create("SurvivorSprite", {
+          screenWidth: app.screen.width,
+          screenHeight: app.screen.height,
+          i: this.survivorsInfo.length,
+          isHumanControlled :true
+        })
+        .getSprite()
+    }
+
+    let p = CreatureFactory.create("Survivor", opt);
+
+    this.survivorsInfo.push(p);
+    this.survivorsContainer.addChild(p.sprite);
+    this.addDebugInfo(p);
+    this.addReproductionTargetLine(p);
+    this.addCreatureHudInformation(p);
+
+
+    app.stage.interactive = true;
+
+  }
+
+  
+
 
   /* EVENT HANDLERS */
 
@@ -667,35 +819,12 @@ class World {
     debugModeOn = !debugModeOn
   }
 
-  updateCreatureHudInformation() {
 
-    for (let i = 0; i < this.creatureHudInfo.length; i++) {
-      let surv = this.survivorsInfo.find(o => o.uid == this.creatureHudInfo[i].uid);
-      if (surv) {
-        /*
-        this.creatureHudInfo[i].x = surv.sprite.x - 10;
-        this.creatureHudInfo[i].y = surv.sprite.y - 20;
-        this.creatureHudInfo[i].text = helper.getEnergyBar(surv.collectStats()
-          .energy); */
 
-        this.creatureHudInfo[i].setEnergyBar(surv, helper.getEnergyBar(surv.collectStats()
-          .energy));
-      }
-    }
 
-    /*
-    if (debugModeOn) {
-      this.creatureHudContainer.alpha = 0.5;
-    } else {
-      this.creatureHudContainer.alpha = 0;
-    }
-    */
 
-    if (this.showEnergyBar)
-      this.creatureHudContainer.alpha = 0.5;
-    else
-      this.creatureHudContainer.alpha = 0;
 
-  }
+  
+  
 
 }

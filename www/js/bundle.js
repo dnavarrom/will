@@ -1582,6 +1582,524 @@ const EventHandler = {
 
 }
 
+class GameUtilities {
+  constructor() {}
+
+  /*
+  distance
+  ----------------
+
+  Find the distance in pixels between two sprites.
+  Parameters: 
+  a. A sprite object. 
+  b. A sprite object. 
+  The function returns the number of pixels distance between the sprites.
+
+     let distanceBetweenSprites = gu.distance(spriteA, spriteB);
+
+  */
+
+  distance(s1, s2) {
+    let vx = (s2.x + this._getCenter(s2, s2.width, "x")) - (s1.x + this._getCenter(s1, s1.width, "x")),
+        vy = (s2.y + this._getCenter(s2, s2.height, "y")) - (s1.y + this._getCenter(s1, s1.height, "y"));
+    return Math.sqrt(vx * vx + vy * vy);
+  }
+
+  /*
+  followEase
+  ----------------
+
+  Make a sprite ease to the position of another sprite.
+  Parameters: 
+  a. A sprite object. This is the `follower` sprite.
+  b. A sprite object. This is the `leader` sprite that the follower will chase.
+  c. The easing value, such as 0.3. A higher number makes the follower move faster.
+
+     gu.followEase(follower, leader, speed);
+
+  Use it inside a game loop.
+  */
+
+  followEase(follower, leader, speed) {
+
+    //Figure out the distance between the sprites
+    /*
+    let vx = (leader.x + leader.width / 2) - (follower.x + follower.width / 2),
+        vy = (leader.y + leader.height / 2) - (follower.y + follower.height / 2),
+        distance = Math.sqrt(vx * vx + vy * vy);
+    */
+
+    let vx = (leader.x + this._getCenter(leader, leader.width, "x")) - (follower.x + this._getCenter(follower, follower.width, "x")),
+        vy = (leader.y + this._getCenter(leader, leader.height, "y")) - (follower.y + this._getCenter(follower, follower.height, "y")),
+        distance = Math.sqrt(vx * vx + vy * vy);
+
+    //Move the follower if it's more than 1 pixel
+    //away from the leader
+    if (distance >= 1) {
+      follower.x += vx * speed;
+      follower.y += vy * speed;
+    }
+  }
+
+  /*
+  followConstant
+  ----------------
+
+  Make a sprite move towards another sprite at a constant speed.
+  Parameters: 
+  a. A sprite object. This is the `follower` sprite.
+  b. A sprite object. This is the `leader` sprite that the follower will chase.
+  c. The speed value, such as 3. The is the pixels per frame that the sprite will move. A higher number makes the follower move faster.
+
+     gu.followConstant(follower, leader, speed);
+
+  */
+
+  followConstant(follower, leader, speed) {
+
+    //Figure out the distance between the sprites
+    let vx = (leader.x + this._getCenter(leader, leader.width, "x")) - (follower.x + this._getCenter(follower, follower.width, "x")),
+        vy = (leader.y + this._getCenter(leader, leader.height, "y")) - (follower.y + this._getCenter(follower, follower.height, "y")),
+        distance = Math.sqrt(vx * vx + vy * vy);
+
+    //Move the follower if it's more than 1 move
+    //away from the leader
+    if (distance >= speed) {
+      follower.x += (vx / distance) * speed;
+      follower.y += (vy / distance) * speed;
+    }
+  }
+
+  /*
+  angle
+  -----
+
+  Return the angle in Radians between two sprites.
+  Parameters: 
+  a. A sprite object.
+  b. A sprite object.
+  You can use it to make a sprite rotate towards another sprite like this:
+
+      box.rotation = gu.angle(box, pointer);
+
+  */
+
+  angle(s1, s2) {
+    return Math.atan2(
+      //This is the code you need if you don't want to compensate
+      //for a possible shift in the sprites' x/y anchor points
+      /*
+      (s2.y + s2.height / 2) - (s1.y + s1.height / 2),
+      (s2.x + s2.width / 2) - (s1.x + s1.width / 2)
+      */
+      //This code adapts to a shifted anchor point
+      (s2.y + this._getCenter(s2, s2.height, "y")) - (s1.y + this._getCenter(s1, s1.height, "y")),
+      (s2.x + this._getCenter(s2, s2.width, "x")) - (s1.x + this._getCenter(s1, s1.width, "x"))
+    );
+  }
+
+  /*
+  _getCenter
+  ----------
+
+  A utility that finds the center point of the sprite. If it's anchor point is the
+  sprite's top left corner, then the center is calculated from that point.
+  If the anchor point has been shifted, then the anchor x/y point is used as the sprite's center
+  */
+
+  _getCenter(o, dimension, axis) {
+    if (o.anchor !== undefined) {
+      if (o.anchor[axis] !== 0) {
+        return 0;
+      } else {
+        //console.log(o.anchor[axis])
+        return dimension / 2;
+      }
+    } else {
+      return dimension; 
+    }
+  }
+  
+
+  /*
+  rotateAroundSprite
+  ------------
+  Make a sprite rotate around another sprite.
+  Parameters:
+  a. The sprite you want to rotate.
+  b. The sprite around which you want to rotate the first sprite.
+  c. The distance, in pixels, that the roating sprite should be offset from the center.
+  d. The angle of rotations, in radians.
+
+     gu.rotateAroundSprite(orbitingSprite, centerSprite, 50, angleInRadians);
+
+  Use it inside a game loop, and make sure you update the angle value (the 4th argument) each frame.
+  */
+
+  rotateAroundSprite(rotatingSprite, centerSprite, distance, angle) {
+    rotatingSprite.x
+      = (centerSprite.x + this._getCenter(centerSprite, centerSprite.width, "x")) - rotatingSprite.parent.x
+      + (distance * Math.cos(angle))
+      - this._getCenter(rotatingSprite, rotatingSprite.width, "x");
+
+    rotatingSprite.y
+      = (centerSprite.y + this._getCenter(centerSprite, centerSprite.height, "y")) - rotatingSprite.parent.y
+      + (distance * Math.sin(angle))
+      - this._getCenter(rotatingSprite, rotatingSprite.height, "y");
+  }
+
+  /*
+  rotateAroundPoint
+  -----------------
+  Make a point rotate around another point.
+  Parameters:
+  a. The point you want to rotate.
+  b. The point around which you want to rotate the first point.
+  c. The distance, in pixels, that the roating sprite should be offset from the center.
+  d. The angle of rotations, in radians.
+
+     gu.rotateAroundPoint(orbitingPoint, centerPoint, 50, angleInRadians);
+
+  Use it inside a game loop, and make sure you update the angle value (the 4th argument) each frame.
+
+  */
+
+  rotateAroundPoint(pointX, pointY, distanceX, distanceY, angle) {
+    let point = {};
+    point.x = pointX + Math.cos(angle) * distanceX;
+    point.y = pointY + Math.sin(angle) * distanceY;
+    return point;
+  }
+
+
+  /*
+  randomInt
+  ---------
+
+  Return a random integer between a minimum and maximum value
+  Parameters: 
+  a. An integer.
+  b. An integer.
+  Here's how you can use it to get a random number between, 1 and 10:
+
+     let number = gu.randomInt(1, 10);
+
+  */
+
+  randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  /*
+  randomFloat
+  -----------
+
+  Return a random floating point number between a minimum and maximum value
+  Parameters: 
+  a. Any number.
+  b. Any number.
+  Here's how you can use it to get a random floating point number between, 1 and 10:
+
+      let number = gu.randomFloat(1, 10);
+
+  */
+
+  randomFloat(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  /*
+  Wait
+  ----
+
+  Lets you wait for a specific number of milliseconds before running the
+  next function. 
+   
+    gu.wait(1000, runThisFunctionNext());
+  
+  */
+
+  wait(duration, callBack) {
+    setTimeout(callBack, duration);
+  }
+
+  /*
+  Move
+  ----
+
+  Move a sprite by adding it's velocity to it's position. The sprite 
+  must have `vx` and `vy` values for this to work. You can supply a
+  single sprite, or a list of sprites, separated by commas.
+
+      gu.move(sprite);
+  */
+
+  move(...sprites) {
+
+    //Move sprites that's aren't in an array
+    if (!(sprites[0] instanceof Array)) {
+      if (sprites.length > 1) {
+        sprites.forEach(sprite  => {
+          sprite.x += sprite.vx;
+          sprite.y += sprite.vy;
+        });
+      } else {
+        sprites[0].x += sprites[0].vx;
+        sprites[0].y += sprites[0].vy;
+      }
+    }
+
+    //Move sprites in an array of sprites
+    else {
+      let spritesArray = sprites[0];
+      if (spritesArray.length > 0) {
+        for (let i = spritesArray.length - 1; i >= 0; i--) {
+          let sprite = spritesArray[i];
+          sprite.x += sprite.vx;
+          sprite.y += sprite.vy;
+        }
+      }
+    }
+  }
+
+
+  /*
+  World camera
+  ------------
+
+  The `worldCamera` method returns a `camera` object
+  with `x` and `y` properties. It has
+  two useful methods: `centerOver`, to center the camera over
+  a sprite, and `follow` to make it follow a sprite.
+  `worldCamera` arguments: worldObject, theCanvas
+  The worldObject needs to have a `width` and `height` property.
+  */
+
+  worldCamera(world, worldWidth, worldHeight, canvas) {
+
+    //Define a `camera` object with helpful properties
+    let camera = {
+      width: canvas.width,
+      height: canvas.height,
+      _x: 0,
+      _y: 0,
+
+      //`x` and `y` getters/setters
+      //When you change the camera's position,
+      //they shift the position of the world in the opposite direction
+      get x() {
+        return this._x;
+      },
+      set x(value) {
+        this._x = value;
+        world.x = -this._x;
+        //world._previousX = world.x;
+      },
+      get y() {
+        return this._y;
+      },
+      set y(value) {
+        this._y = value;
+        world.y = -this._y;
+        //world._previousY = world.y;
+      },
+
+      //The center x and y position of the camera
+      get centerX() {
+        return this.x + (this.width / 2);
+      },
+      get centerY() {
+        return this.y + (this.height / 2);
+      },
+
+      //Boundary properties that define a rectangular area, half the size
+      //of the game screen. If the sprite that the camera is following
+      //is inide this area, the camera won't scroll. If the sprite
+      //crosses this boundary, the `follow` function ahead will change
+      //the camera's x and y position to scroll the game world
+      get rightInnerBoundary() {
+        return this.x + (this.width / 2) + (this.width / 4);
+      },
+      get leftInnerBoundary() {
+        return this.x + (this.width / 2) - (this.width / 4);
+      },
+      get topInnerBoundary() {
+        return this.y + (this.height / 2) - (this.height / 4);
+      },
+      get bottomInnerBoundary() {
+        return this.y + (this.height / 2) + (this.height / 4);
+      },
+
+      //The code next defines two camera 
+      //methods: `follow` and `centerOver`
+
+      //Use the `follow` method to make the camera follow a sprite
+      follow: function(sprite) {
+
+        //Check the sprites position in relation to the inner
+        //boundary. Move the camera to follow the sprite if the sprite 
+        //strays outside the boundary
+        if(sprite.x < this.leftInnerBoundary) {
+          this.x = sprite.x - (this.width / 4);
+        }
+        if(sprite.y < this.topInnerBoundary) {
+          this.y = sprite.y - (this.height / 4);
+        }
+        if(sprite.x + sprite.width > this.rightInnerBoundary) {
+          this.x = sprite.x + sprite.width - (this.width / 4 * 3);
+        }
+        if(sprite.y + sprite.height > this.bottomInnerBoundary) {
+          this.y = sprite.y + sprite.height - (this.height / 4 * 3);
+        }
+
+        //If the camera reaches the edge of the map, stop it from moving
+        if(this.x < 0) {
+          this.x = 0;
+        }
+        if(this.y < 0) {
+          this.y = 0;
+        }
+        if(this.x + this.width > worldWidth) {
+          this.x = worldWidth - this.width;
+        }
+        if(this.y + this.height > worldHeight) {
+          this.y = worldHeight - this.height;
+        }
+      },
+
+      //Use the `centerOver` method to center the camera over a sprite
+      centerOver: function(sprite) {
+
+        //Center the camera over a sprite
+        this.x = (sprite.x + sprite.halfWidth) - (this.width / 2);
+        this.y = (sprite.y + sprite.halfHeight) - (this.height / 2);
+      }
+    };
+    
+    //Return the `camera` object 
+    return camera;
+  };
+
+  /*
+  Line of sight
+  ------------
+
+  The `lineOfSight` method will return `true` if there’s clear line of sight 
+  between two sprites, and `false` if there isn’t. Here’s how to use it in your game code:
+
+      monster.lineOfSight = gu.lineOfSight(
+          monster, //Sprite one
+          alien,   //Sprite two
+          boxes,   //An array of obstacle sprites
+          16       //The distance between each collision point
+      );
+
+  The 4th argument determines the distance between collision points. 
+  For better performance, make this a large number, up to the maximum 
+  width of your smallest sprite (such as 64 or 32). For greater precision, 
+  use a smaller number. You can use the lineOfSight value to decide how 
+  to change certain things in your game. For example:
+
+      if (monster.lineOfSight) {
+        monster.show(monster.states.angry)
+      } else {
+        monster.show(monster.states.normal)
+      }
+
+  */
+
+  lineOfSight(
+    s1, //The first sprite, with `centerX` and `centerY` properties
+    s2, //The second sprite, with `centerX` and `centerY` properties
+    obstacles, //An array of sprites which act as obstacles
+    segment = 32 //The distance between collision points
+  ) {
+
+  //Calculate the center points of each sprite
+  spriteOneCenterX = s1.x + this._getCenter(s1, s1.width, "x");
+  spriteOneCenterY = s1.y + this._getCenter(s1, s1.height, "y");
+  spriteTwoCenterX = s2.x + this._getCenter(s2, s2.width, "x");
+  spriteTwoCenterY = s2.y + this._getCenter(s2, s2.height, "y");
+
+  //Plot a vector between spriteTwo and spriteOne
+  let vx = spriteTwoCenterX - spriteOneCenterX,
+    vy = spriteTwoCenterY - spriteOneCenterY;
+
+  //Find the vector's magnitude (its length in pixels)
+  let magnitude = Math.sqrt(vx * vx + vy * vy);
+
+  //How many points will we need to test?
+  let numberOfPoints = magnitude / segment;
+
+  //Create an array of x/y points, separated by 64 pixels, that
+  //extends from `spriteOne` to `spriteTwo`  
+  let points = () => {
+
+    //Initialize an array that is going to store all our points
+    //along the vector
+    let arrayOfPoints = [];
+
+    //Create a point object for each segment of the vector and 
+    //store its x/y position as well as its index number on
+    //the map array 
+    for (let i = 1; i <= numberOfPoints; i++) {
+
+      //Calculate the new magnitude for this iteration of the loop
+      let newMagnitude = segment * i;
+
+      //Find the unit vector. This is a small, scaled down version of
+      //the vector between the sprites that's less than one pixel long.
+      //It points in the same direction as the main vector, but because it's
+      //the smallest size that the vector can be, we can use it to create
+      //new vectors of varying length
+      let dx = vx / magnitude,
+        dy = vy / magnitude;
+
+      //Use the unit vector and newMagnitude to figure out the x/y
+      //position of the next point in this loop iteration
+      let x = spriteOneCenterX + dx * newMagnitude,
+        y = spriteOneCenterY + dy * newMagnitude;
+
+      //Push a point object with x and y properties into the `arrayOfPoints`
+      arrayOfPoints.push({
+        x, y
+      });
+    }
+
+    //Return the array of point objects
+    return arrayOfPoints;
+  };
+
+  //Test for a collision between a point and a sprite
+  let hitTestPoint = (point, sprite) => {
+
+    //Find out if the point's position is inside the area defined
+    //by the sprite's left, right, top and bottom sides
+    let left = point.x > sprite.x,
+      right = point.x < (sprite.x + sprite.width),
+      top = point.y > sprite.y,
+      bottom = point.y < (sprite.y + sprite.height);
+
+    //If all the collision conditions are met, you know the
+    //point is intersecting the sprite
+    return left && right && top && bottom;
+  };
+
+  //The `noObstacles` function will return `true` if all the tile
+  //index numbers along the vector are `0`, which means they contain 
+  //no obstacles. If any of them aren't 0, then the function returns
+  //`false` which means there's an obstacle in the way 
+  let noObstacles = points().every(point => {
+    return obstacles.every(obstacle => {
+      return !(hitTestPoint(point, obstacle))
+    });
+  });
+
+  //Return the true/false value of the collision test
+  return noObstacles;
+  }
+}
+
 /* eslint-disable */
 
 function S4() {
@@ -1593,6 +2111,7 @@ function S4() {
 class Helpers {
   constructor() {
 
+    this.gu = new GameUtilities();
   }
 
   generateRandomInteger(min, max) {
@@ -1614,6 +2133,7 @@ class Helpers {
     return Math.random();
   }
 
+  
   rotateToPoint(mx, my, px, py) {
     var self = this; // TODO: que mierda es esto, revisar
     var dist_Y = my - py;
@@ -1625,7 +2145,9 @@ class Helpers {
     var angle = Math.atan2(dist_Y, dist_X);
     return ((angle * 180 / Math.PI) * -1);
   }
+  
 
+  
   getAngleBetweenSprites(r1, r2) {
     var dist_Y = r1.y - r2.y;
     var dist_X = r1.x - r2.x;
@@ -1635,7 +2157,18 @@ class Helpers {
     var angle = Math.atan2(dist_Y, dist_X);
     return angle;
   }
+  
+ 
+  /*
+  getAngleBetweenSprites(r1,r2) {
+    return this.gu.angle(r1,r2);
+  }*/
+  
 
+  getDistanceBetweenSprites(r1, r2) {
+    return this.gu.distance(r1,r2);
+  }
+  /*
   getDistanceBetweenSprites(r1, r2) {
     let vx, vy;
 
@@ -1662,6 +2195,20 @@ class Helpers {
 
   }
 
+  */
+
+  /*
+  CheckDistanceBetweenSprites(r1,r2) {
+    let returnData = {
+      distance: this.gu.distance(r1,r2),
+      angle: (this.gu.angle(r1,r2) * 180 / Math.PI) * -1
+    };
+    return returnData;
+  }
+
+  */
+
+  
   //TODO : esta funcion esta fucker, ademas de devolver la distancia
   // entrega el angulo, pero con rotacion wtf!!.
   CheckDistanceBetweenSprites(r1, r2) {
@@ -1699,6 +2246,7 @@ class Helpers {
     return returnData;
   }
 
+  
   /**
    * 
    * @param {*} r1  sprite central
@@ -1828,6 +2376,15 @@ class InGameInformation {
       strokeThickness: 2
     });
 
+    this.currentDisplay = {
+      sprites :  "", 
+      predators : "", 
+      food : "",
+      iteration : "",
+      generationNumber : "", 
+      generationStats : ""
+    };
+
     //this.uiTextInfo.x = app.screen.width / 2;
     //this.uiTextInfo.y = app.screen.height - 30;
     this.setPosition(app.screen.width, app.screen.height);
@@ -1866,9 +2423,13 @@ class InGameInformation {
   }
 
   updateUi(sprites, predators, food, iteration, generationNumber, generationStats, fps) {
+
+    if (this.sprites != sprites || this.predators != predators || this.food != food || 
+      this.generationNumber != generationNumber || this.generationStats || generationStats) { 
     this.uiTextInfo.text = "Generation N° : " + generationNumber + " - Iteration N° : " + iteration +
       " - Best Generation Fitness : " + generationStats.BestFitness + " - [ #Food : " + food + " - #Survivors : " +
-      sprites + " - #Predators: " + predators + " ] - FPS : " + Math.round(fps);
+      sprites + " - #Predators: " + predators + " ]";
+      }
   }
 
   setPosition(width, height) {
@@ -2152,6 +2713,7 @@ class World {
     this.targetMateLineInfo = [];
     this.debugInfo = [];
     this.creatureHudInfo = [];
+    this.bestSurvivorInfo = [];
 
     this.b = b; //bump
 
@@ -2165,15 +2727,28 @@ class World {
     this.generationStats = [];
     this.generationStats.push({ BestsurvivorId: -1, WorsesurvivorId: -1, BestFitness: -1, WorseFitness: -1 });
 
-    this.survivorsContainer = new PIXI.Container(10000, {
-      scale: true,
-      position: true,
-      rotation: true,
-      uvs: true,
-      alpha: true
-    });
 
-    app.stage.addChild(this.survivorsContainer);
+    if (config.app.highendGPU) {
+      this.survivorsContainer = new PIXI.Container(10000, {
+        scale: true,
+        position: true,
+        rotation: true,
+        uvs: true,
+        alpha: true
+      });
+    }
+    else
+    {
+      this.survivorsContainer = new PIXI.ParticleContainer(10000, {
+        scale: true,
+        position: true,
+        rotation: true,
+        uvs: true,
+        alpha: true
+      });
+    }
+
+    //app.stage.addChild(this.survivorsContainer);
 
     this.predatorsContainer = new PIXI.particles.ParticleContainer(100, {
       scale: true,
@@ -2183,7 +2758,7 @@ class World {
       alpha: true
     });
 
-    app.stage.addChild(this.predatorsContainer);
+    //app.stage.addChild(this.predatorsContainer);
 
     this.foodContainer = new PIXI.particles.ParticleContainer(1000, {
       scale: true,
@@ -2193,7 +2768,7 @@ class World {
       alpha: true
     });
 
-    app.stage.addChild(this.foodContainer);
+    //app.stage.addChild(this.foodContainer);
 
     this.debugContainer = new PIXI.particles.ParticleContainer(1000, {
       scale: true,
@@ -2203,7 +2778,7 @@ class World {
       alpha: true
     });
 
-    app.stage.addChild(this.debugContainer);
+    //app.stage.addChild(this.debugContainer);
 
     this.creatureHudContainer = new PIXI.Container(1000, {
       scale: true,
@@ -2212,10 +2787,11 @@ class World {
       uvs: true,
       alpha: true
     })
-    app.stage.addChild(this.creatureHudContainer);
+    //app.stage.addChild(this.creatureHudContainer);
+
     this.showEnergyBar = false;
 
-    this.targetMateLineContainer = new PIXI.Container(1000, {
+    this.targetMateLineContainer = new PIXI.ParticleContainer(1000, {
       scale: true,
       position: true,
       rotation: true,
@@ -2223,7 +2799,15 @@ class World {
       alpha: true
     });
 
-    app.stage.addChild(this.targetMateLineContainer);
+    this.bestSurvivorCointainer = new PIXI.ParticleContainer(1000, {
+      scale: true,
+      position: true,
+      rotation: true,
+      uvs: true,
+      alpha: true
+    });
+
+    //app.stage.addChild(this.targetMateLineContainer);
 
     this.containers = {
       predatorsContainer: this.predatorsContainer,
@@ -2231,7 +2815,8 @@ class World {
       foodContainer: this.foodContainer,
       debugContainer: this.debugContainer,
       creatureHudContainer: this.creatureHudContainer,
-      targetMateLineContainer: this.targetMateLineContainer
+      targetMateLineContainer: this.targetMateLineContainer,
+      bestSurvivorCointainer : this.bestSurvivorCointainer
     };
 
     this.worldInfo = {
@@ -2242,8 +2827,34 @@ class World {
       debugInfo: this.debugInfo,
       creatureHudInfo: this.creatureHudInfo,
       targetMateLineInfo: this.targetMateLineInfo,
+      bestSurvivorInfo : this.bestSurvivorInfo,
       deadSurvivors: this.deadSurvivors
     };
+
+    this.viewport = new Viewport.Viewport({
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight,
+      worldWidth: config.app.width,
+      worldHeight: config.app.height,
+  
+      interaction: app.renderer.plugins.interaction
+    });
+
+
+    this.viewport.addChild(this.containers.survivorsContainer);
+    this.viewport.addChild(this.containers.foodContainer);
+    this.viewport.addChild(this.containers.predatorsContainer);
+    this.viewport.addChild(this.containers.creatureHudContainer);
+    this.viewport.addChild(this.containers.bestSurvivorCointainer);
+    
+    this.viewport
+    .drag()
+    .pinch()
+    .wheel()
+    .decelerate()
+
+    app.stage.addChild(this.viewport);
+    this.viewport.setZoom(0.8,true);
 
   }
 
@@ -2282,8 +2893,10 @@ class World {
 
       let opt = {
         i: i,
-        screenWidth: app.screen.width,
-        screenHeight: app.screen.height
+        //screenWidth: app.screen.width,
+        //screenHeight: app.screen.height
+        screenWidth: config.app.width,//app.screen.width,
+        screenHeight: config.app.height//app.screen.height,
       }
 
       let obj = SpriteFactory.create("FoodSprite", opt);
@@ -2378,8 +2991,8 @@ class World {
         i: i,
         //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
         sprite: SpriteFactory.create("SurvivorSprite", {
-            screenWidth: app.screen.width,
-            screenHeight: app.screen.height,
+            screenWidth: config.app.width,//app.screen.width,
+            screenHeight: config.app.height,//app.screen.height,
             i: i,
             isHumanControlled :false
           })
@@ -2434,7 +3047,6 @@ class World {
       this.survivorsInfo.push(p);
       this.survivorsContainer.addChild(p.sprite);
       //add children uid to parents childrens list
-      //TODO : REPARAR ESTO (ya no se usa la property index).
       this.survivorsInfo.find(o => o.uid == opt.dna.parent1Uid)
         .addChildren(p.uid);
       this.survivorsInfo.find(o => o.uid == opt.dna.parent2Uid)
@@ -2446,6 +3058,11 @@ class World {
     }
   }
 
+  
+/**
+ * Add Debug information to screen
+ * @param {Survivor} survivor 
+ */
   addDebugInfo(survivor) {
 
     //Circle
@@ -2462,6 +3079,30 @@ class World {
     this.debugInfo.push(img);
   }
 
+    //TODO : no uso estas variables.. raro lo que pensé.
+    updateDebugInfo(op, survivor) {
+
+      for (let i = 0; i < this.debugInfo.length; i++) {
+        let surv = this.survivorsInfo.find(o => o.uid == this.debugInfo[i].uid);
+        if (surv) {
+          this.debugInfo[i].x = surv.sprite.x;
+          this.debugInfo[i].y = surv.sprite.y;
+        }
+      }
+  
+      if (debugModeOn) {
+        this.debugContainer.alpha = 0.3;
+        this.targetMateLineContainer.alpha = 0.3;
+      } else {
+        this.debugContainer.alpha = 0;
+        this.targetMateLineContainer.alpha = 0;
+  
+      }
+  
+    }
+  
+    /****** CREATURE HUD */
+
   addCreatureHudInformation(survivor) {
 
     let hudTextInfo = new EnergyBarSprite({ app: app, survivor: survivor });
@@ -2469,6 +3110,35 @@ class World {
     this.creatureHudInfo.push(hudTextInfo);
   }
 
+  updateCreatureHudInformation() {
+
+    if (this.showEnergyBar) {
+    for (let i = 0; i < this.creatureHudInfo.length; i++) {
+      let surv = this.survivorsInfo.find(o => o.uid == this.creatureHudInfo[i].uid);
+      if (surv) {
+        this.creatureHudInfo[i].setEnergyBar(surv, helper.getEnergyBar(surv.collectStats()
+          .energy));
+      }
+    }
+  }
+    /*
+    if (debugModeOn) {
+      this.creatureHudContainer.alpha = 0.5;
+    } else {
+      this.creatureHudContainer.alpha = 0;
+    }
+    */
+
+    if (this.showEnergyBar)
+      this.creatureHudContainer.alpha = 0.5;
+    else
+      this.creatureHudContainer.alpha = 0;
+
+  }
+
+  /**** END CREATURE HUD */
+
+  /**** LINEAGE */
   addReproductionTargetLine(survivor) {
     let graph = new PIXI.Graphics();
     graph.uid = survivor.uid;
@@ -2495,6 +3165,17 @@ class World {
       }
     }
   }
+
+  clearChildrenTreeLine(survivor) {
+    let currentLine = this.targetMateLineInfo.find(o => o.uid == survivor.uid);
+    if (currentLine) {
+      currentLine.clear();
+      this.targetMateLineContainer.removeChild(currentLine);
+      this.targetMateLineInfo = this.targetMateLineInfo.filter(o => o.uid !== currentLine.uid);
+    }
+  }
+
+  /**** END LINEAGE */
 
   /**
    * Process food sprites and events
@@ -2529,7 +3210,7 @@ class World {
   }
 
   /**
-   * Predators logic
+   * Process Predator logic and events
    */
   processPredator() {
 
@@ -2562,99 +3243,8 @@ class World {
   }
 
   /**
-   * Remove survivor from simulation arrays (PIXI containers and logic arrays)
-   * @param {survivor} survivor object 
+   * Process Survivor logic and events
    */
-  killSurvivor(survivor) {
-    this.survivorsContainer.removeChild(survivor.sprite);
-    this.debugContainer.removeChild(this.debugInfo.find(o => o.uid == survivor.uid));
-    this.creatureHudContainer.removeChild(this.creatureHudInfo.find(o => o.uid == survivor.uid));
-    this.deadSurvivors.push(this.survivorsInfo.find(o => o.uid == survivor.uid));
-    this.survivorsInfo = this.survivorsInfo.filter(o => o.uid !== survivor.uid)
-    this.debugInfo = this.debugInfo.filter(o => o.uid !== survivor.uid);
-    this.creatureHudInfo = this.creatureHudInfo.filter(o => o.uid !== survivor.uid);
-    this.clearChildrenTreeLine(survivor);
-  }
-
-  clearChildrenTreeLine(survivor) {
-    let currentLine = this.targetMateLineInfo.find(o => o.uid == survivor.uid);
-    if (currentLine) {
-      currentLine.clear();
-      this.targetMateLineContainer.removeChild(currentLine);
-      this.targetMateLineInfo = this.targetMateLineInfo.filter(o => o.uid !== currentLine.uid);
-    }
-  }
-
-  /**
-   * Calculate fitness and evaluate generation
-   */
-  evaluateGeneration() {
-
-    var survivorsOrderedInfo = [];
-
-    //ordenado de menor a mayor
-    survivorsOrderedInfo = _.sortBy(_.union(this.survivorsInfo, this.deadSurvivors), "numBugEated");
-
-    let lastIdx = survivorsOrderedInfo.length;
-
-    var thisGen = {
-      BestsurvivorId: 0,
-      WorsesurvivorId: 0,
-      BestFitness: 0,
-      WorseFitness: 0
-    };
-
-    if (lastIdx > 0) {
-      thisGen = {
-        BestsurvivorId: survivorsOrderedInfo[lastIdx - 1].collectStats()
-          .uid,
-        WorsesurvivorId: survivorsOrderedInfo[0].collectStats()
-          .uid,
-        BestFitness: survivorsOrderedInfo[lastIdx - 1].collectStats()
-          .numBugEated,
-        WorseFitness: survivorsOrderedInfo[0].collectStats()
-          .numBugEated
-      };
-    }
-
-    //console.dir(survivorsOrderedInfo);
-    this.generationStats.push(thisGen);
-
-  }
-
-  spawnHumanControlledCreatureHandler() {
-    
-
-    let population = [];
-
-    let opt = {
-      PIXI: PIXI,
-      dna: population[0],
-      isHumanControlled: true,
-      i: this.survivorsInfo.length,
-      //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
-      sprite: SpriteFactory.create("SurvivorSprite", {
-          screenWidth: app.screen.width,
-          screenHeight: app.screen.height,
-          i: this.survivorsInfo.length,
-          isHumanControlled :true
-        })
-        .getSprite()
-    }
-
-    let p = CreatureFactory.create("Survivor", opt);
-
-    this.survivorsInfo.push(p);
-    this.survivorsContainer.addChild(p.sprite);
-    this.addDebugInfo(p);
-    this.addReproductionTargetLine(p);
-    this.addCreatureHudInformation(p);
-
-
-    app.stage.interactive = true;
-
-  }
-
   processSurvivor() {
 
     // iterate through the survivors and find food, move, dodge
@@ -2669,7 +3259,27 @@ class World {
          * FIRST PRIORITY : Find Food and survive
          */
         if (!this.survivorsInfo[i].reproductionStatus.isCopuling) {
-          this.survivorsInfo[i].findFood(this.foodInfo);
+          let nearFoodArray = this.survivorsInfo[i].findFood(this.foodInfo);
+
+          //sobreviviente comio?
+          if (nearFoodArray.length > 0) {
+            let survivorEating = this.b.hit(
+              this.survivorsInfo[i].sprite, nearFoodArray, false, false, false,
+              function(collision, food) {
+                if (collision != undefined) {  
+                  if (!food.eated) {
+                    food.eated = true;
+                    this.foodContainer.removeChild(food);
+                    //this.foodInfo.splice(food.idx, 1);
+                    this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
+                    this.survivorsInfo[i].eat();
+                    //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
+                  }
+              }
+              }.bind(this)
+            );
+          }
+
         }
 
         //check for predator and change direction, it will cancel other movements
@@ -2739,22 +3349,6 @@ class World {
         //check for border colission and change direction
         this.survivorsInfo[i].setDirection(this.survivorsInfo[i].sprite.handleBorderCollition());
 
-        //sobreviviente comio?
-
-        let survivorEating = this.b.hit(
-          this.survivorsInfo[i].sprite, this.foodInfo, false, false, false,
-          function(collision, food) {
-            if (!food.eated) {
-              food.eated = true;
-              this.foodContainer.removeChild(food);
-              //this.foodInfo.splice(food.idx, 1);
-              this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
-              this.survivorsInfo[i].eat();
-              //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
-            }
-          }.bind(this)
-        );
-
         //Move
         this.survivorsInfo[i].move();
 
@@ -2767,27 +3361,146 @@ class World {
 
   }
 
-  //TODO : no uso estas variables.. raro lo que pensé.
-  updateDebugInfo(op, survivor) {
+  /**
+   * Remove survivor from simulation arrays (PIXI containers and logic arrays)
+   * @param {survivor} survivor object 
+   */
+  killSurvivor(survivor) {
+    this.survivorsContainer.removeChild(survivor.sprite);
+    this.debugContainer.removeChild(this.debugInfo.find(o => o.uid == survivor.uid));
+    this.creatureHudContainer.removeChild(this.creatureHudInfo.find(o => o.uid == survivor.uid));
+    this.bestSurvivorCointainer.removeChild(survivor.sprite);
 
-    for (let i = 0; i < this.debugInfo.length; i++) {
-      let surv = this.survivorsInfo.find(o => o.uid == this.debugInfo[i].uid);
-      if (surv) {
-        this.debugInfo[i].x = surv.sprite.x;
-        this.debugInfo[i].y = surv.sprite.y;
-      }
+    this.deadSurvivors.push(this.survivorsInfo.find(o => o.uid == survivor.uid));
+    this.survivorsInfo = this.survivorsInfo.filter(o => o.uid !== survivor.uid)
+    this.debugInfo = this.debugInfo.filter(o => o.uid !== survivor.uid);
+    this.bestSurvivorInfo = this.bestSurvivorInfo.filter(o => o.uid !== survivor.uid);
+    this.creatureHudInfo = this.creatureHudInfo.filter(o => o.uid !== survivor.uid);
+    this.clearChildrenTreeLine(survivor);
+  }
+
+  /**
+   * Calculate fitness and evaluate generation
+   */
+  evaluateGeneration() {
+
+    var survivorsOrderedInfo = [];
+
+    //ordenado de menor a mayor
+    survivorsOrderedInfo = _.sortBy(_.union(this.survivorsInfo, this.deadSurvivors), "numBugEated");
+    //survivorsOrderedInfo = _.sortBy(this.survivorsInfo, "numBugEated");
+
+    let lastIdx = survivorsOrderedInfo.length;
+
+    var thisGen = {
+      BestsurvivorId: 0,
+      WorsesurvivorId: 0,
+      BestFitness: 0,
+      WorseFitness: 0
+    };
+
+    if (lastIdx > 0) {
+      thisGen = {
+        BestsurvivorId: survivorsOrderedInfo[lastIdx - 1].collectStats()
+          .uid,
+        WorsesurvivorId: survivorsOrderedInfo[0].collectStats()
+          .uid,
+        BestFitness: survivorsOrderedInfo[lastIdx - 1].collectStats()
+          .numBugEated,
+        WorseFitness: survivorsOrderedInfo[0].collectStats()
+          .numBugEated
+      };
+      //showBest
+      let srv = this.survivorsInfo.find(o=>o.uid == thisGen.BestsurvivorId);
+      if (srv)
+        this.showBestSurvivor(srv);
     }
 
-    if (debugModeOn) {
-      this.debugContainer.alpha = 0.3;
-      this.targetMateLineContainer.alpha = 0.3;
-    } else {
-      this.debugContainer.alpha = 0;
-      this.targetMateLineContainer.alpha = 0;
-
-    }
+    //console.dir(survivorsOrderedInfo);
+    this.generationStats.push(thisGen);
 
   }
+
+  updateBestSurvivorInformation() {
+
+    if (this.bestSurvivorInfo.length > 0) {
+      let lastIdx = this.bestSurvivorInfo.length - 1;
+      let surv = this.survivorsInfo.find(o => o.uid == this.bestSurvivorInfo[lastIdx].uid);
+      if (surv) {
+        this.bestSurvivorInfo[lastIdx].x = surv.sprite.x;
+        this.bestSurvivorInfo[lastIdx].y = surv.sprite.y;
+      }
+    }
+    
+  }
+
+  /** to show best Survivor */
+  showBestSurvivor(survivor) {
+    let srv = this.bestSurvivorInfo.find(o=> o.uid == survivor.uid);
+    if (srv == undefined) {
+      let spt = SpriteFactory.create("SelectedSprite", {
+      uid : survivor.uid,
+      screenWidth: app.screen.width,
+      screenHeight: app.screen.height,
+      radius : 12,
+      x : survivor.sprite.x,
+      y : survivor.sprite.y,
+      i: this.bestSurvivorInfo.length,
+      selectionType : Constants.selectionTypes.CIRCLE,
+      hasText : true,
+      text : "best"
+    });
+
+    for (let i= 0; i<this.bestSurvivorInfo.length; i++) {
+      let rem = this.bestSurvivorCointainer.removeChild(this.bestSurvivorInfo[i]);
+      if (rem)
+        console.log("Removed : " + rem.uid);
+    }
+    
+    
+    //this.bestSurvivorInfo = [];
+    this.bestSurvivorInfo.push(spt);
+    this.bestSurvivorCointainer.addChild(spt);
+    
+  }
+    
+  }
+
+  spawnHumanControlledCreatureHandler() {
+    
+
+    let population = [];
+
+    let opt = {
+      PIXI: PIXI,
+      dna: population[0],
+      isHumanControlled: true,
+      i: this.survivorsInfo.length,
+      //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
+      sprite: SpriteFactory.create("SurvivorSprite", {
+          screenWidth: app.screen.width,
+          screenHeight: app.screen.height,
+          i: this.survivorsInfo.length,
+          isHumanControlled :true
+        })
+        .getSprite()
+    }
+
+    let p = CreatureFactory.create("Survivor", opt);
+
+    this.survivorsInfo.push(p);
+    this.survivorsContainer.addChild(p.sprite);
+    this.addDebugInfo(p);
+    this.addReproductionTargetLine(p);
+    this.addCreatureHudInformation(p);
+
+
+    app.stage.interactive = true;
+
+  }
+
+  
+
 
   /* EVENT HANDLERS */
 
@@ -2806,36 +3519,13 @@ class World {
     debugModeOn = !debugModeOn
   }
 
-  updateCreatureHudInformation() {
 
-    for (let i = 0; i < this.creatureHudInfo.length; i++) {
-      let surv = this.survivorsInfo.find(o => o.uid == this.creatureHudInfo[i].uid);
-      if (surv) {
-        /*
-        this.creatureHudInfo[i].x = surv.sprite.x - 10;
-        this.creatureHudInfo[i].y = surv.sprite.y - 20;
-        this.creatureHudInfo[i].text = helper.getEnergyBar(surv.collectStats()
-          .energy); */
 
-        this.creatureHudInfo[i].setEnergyBar(surv, helper.getEnergyBar(surv.collectStats()
-          .energy));
-      }
-    }
 
-    /*
-    if (debugModeOn) {
-      this.creatureHudContainer.alpha = 0.5;
-    } else {
-      this.creatureHudContainer.alpha = 0;
-    }
-    */
 
-    if (this.showEnergyBar)
-      this.creatureHudContainer.alpha = 0.5;
-    else
-      this.creatureHudContainer.alpha = 0;
 
-  }
+  
+  
 
 }
 
@@ -2998,25 +3688,28 @@ const SpriteFactory = {
 var config = {
   app: {
     width: 2000,
-    height: 1500,
+    height: 2000,
     autoSize: true,
     visual: {
       bgcolor: "0X022a31"
-    }
+    },
+    highendGPU : false //to enable / disable filters that affects FPS
   },
   world: {
-    food: 100,
-    predators: 1,
-    survivors: 45,
-    maxFoodGenerationRatio: 50,
+    food: 300,
+    predators: 3,
+    survivors: 30,
+    maxFoodGenerationRatio: 150,
     foodRegenerationThreshold: 0.15, // % of max food to regenerate food
-    maxFood: 150,
-    maxSurvivors: 90,
+    maxFood: 500,
+    maxSurvivors: 100,
+    maxSurvivorsGenerationRatio : 30,
+    survivorsRegenerationThreshold : 0.30,
     maxPredators: 3
 
   },
   evolution: {
-    generationLimit: 10,
+    generationLimit: 3,
     geneticOperators: {
       crossoverProbabilityRate: 0.3,
       specificGeneCrossoverRate: 0.5,
@@ -3045,6 +3738,11 @@ const Constants = {
     creatureTypes: {
       SURVIVOR: "SURVIVOR",
       PREDATOR: "PREDATOR"
+    },
+    selectionTypes : {
+      CIRCLE : "CIRCLE",
+      RECTANGLE : "RECTANGLE",
+      SQUARE : "SQUARE"
     },
     colors: {
       RED: 0xf91800,
@@ -3180,6 +3878,7 @@ class FoodSprite extends CustomSprite {
     //this.sprite.scale.set(0.05);
     this.sprite.scale.set(1);
 
+    //TODO : change this for config.app.worldsize
     this.sprite.x = Math.random() * (this.appScreenWidth - 50);
     this.sprite.y = Math.random() * (this.appScreenHeight - 50);
 
@@ -3252,12 +3951,15 @@ class EnergyBarSprite extends PIXI.Text {
 
   toggleEnergyBar() {
     this.visible = !this.visible;
+    this.alpha = 0;
 
+    /*
     //TODO: solo para debug
     if (this.visible)
       this.alpha = 1;
     if (!this.visible)
       this.alpha = 1;
+      */
   }
 
 }
@@ -3353,6 +4055,98 @@ class SurvivorSprite extends CustomSprite {
 
     
   }
+}
+
+/* eslint-disable */
+class SelectedSprite extends CustomSprite {
+
+  constructor(opt) {
+    super(opt);
+
+    
+    this.radius = opt.radius;
+    this.uid = opt.uid; 
+
+    this.init(opt);
+
+  }
+
+  init(opt) {
+
+    let gfx = new PIXI.Graphics();
+
+    // set the x, y and anchor
+    this.x = opt.x;
+    this.y = opt.y;
+    this.anchor.set(0.5);
+
+    switch (opt.selectionType) {
+      case Constants.selectionTypes.RECTANGLE:
+        throw new error ("Not implemented yet");
+        break;
+      case Constants.selectionTypes.CIRCLE:
+        this.texture = this.circleSelection(gfx);
+        break;
+      default:
+        console.log("SelectionType not defined, using default circle");
+        this.texture = this.circleSelection(gfx);
+    }
+
+
+    
+
+    // create the text object
+
+    if (opt.hasText) {
+      this.text = new PIXI.Text("", 'arial');
+      this.text.anchor = new PIXI.Point(0.5, 0.5);
+      this.addChild(this.text);
+      this.setText(opt.text, null);
+    }
+
+
+  }
+
+  circleSelection(gfx) {
+    //gfx.beginFill(0xFFFF0B, 0.2);
+    gfx.lineStyle(1, Constants.colors.YELLOW, 1);
+    gfx.drawCircle(this.x, this.y, this.radius);
+    //gfx.endFill();
+    return gfx.generateTexture();
+  }
+
+
+  
+
+  setText(val, style) {
+
+    // Set text to be the value passed as a parameter
+    this.text.text = val;
+    // Set style of text to the style passed as a parameter
+    if (style) {
+      this.text.style = style;
+    } else {
+      this.text.style = new PIXI.TextStyle({
+        fontFamily: 'Arial', // Font Family
+        fontSize: 10, // Font Size
+        //fontStyle: 'italic',// Font Style
+        //fontWeight: 'bold', // Font Weight
+        fill: [Constants.colors.BLACK], // gradient
+        //fill: ['#ffffff', '#F8A9F9'], // gradient
+        //stroke: '#4a1850',
+        //strokeThickness: 5,
+        //dropShadow: true,
+        //dropShadowColor: '#000000',
+        //dropShadowBlur: 4,
+        //dropShadowAngle: Math.PI / 6,
+        //dropShadowDistance: 6,
+        //wordWrap: true,
+        //wordWrapWidth: 150
+      });
+    }
+
+  }
+
 }
 
 /* eslint-disable */
@@ -3759,6 +4553,8 @@ class Predator extends Creature {
    */
   findSurvivors(survivorsInfo) {
 
+    return;
+    
     let nearestSurvivorUid;
     let nearestSurvivorDistance = 9000;
     let angle;
@@ -3773,6 +4569,8 @@ class Predator extends Creature {
           nearestSurvivorUid = survivorsInfo[i].uid;
           angle = dist.angle;
           survivorFound++;
+          //TODO: Breack cycle
+          break;
         }
       }
     }
@@ -3821,14 +4619,19 @@ class Survivor extends Creature {
   findFood(foodInfo) {
 
     //checkear la comida mas cercana
+    let nearFoodArray = [];
 
+    /*
     if (this.isHumanControlled)
-      return;
+      return nearFoodArray;
+    */
 
     var nearestFoodIdx;
     var nearestFoodDistance = 1000;
     var angle;
     var foodfound = 0;
+
+    
 
     for (var j = 0; j < foodInfo.length; j++) {
 
@@ -3843,6 +4646,11 @@ class Survivor extends Creature {
           nearestFoodIdx = j;
           angle = dist.angle;
           foodfound++;
+
+          nearFoodArray.push(foodInfo[j]);
+
+          if (nearFoodArray.length > 3)
+            break;
         }
       }
     }
@@ -3863,6 +4671,8 @@ class Survivor extends Creature {
     }
 
     //console.log("FIND FOOD RESULT : " + this.nearestFoodDistance);
+
+    return nearFoodArray;
 
   }
 
@@ -3891,6 +4701,8 @@ class Survivor extends Creature {
     if (!this.reproductionStatus.isCopuling) {
       if (this.isHumanControlled) {
         let mousePosition = app.renderer.plugins.interaction.mouse.global;
+        //let mousePosition = app.renderer.plugins.interaction.mouse.getLocalPosition(mp);
+        app.renderer.plugins.interaction.mouse.reset();
         let r1 = {
           x : mousePosition.x,
           y : mousePosition.y
@@ -3898,6 +4710,7 @@ class Survivor extends Creature {
   
         this.setDirection(helper.getAngleBetweenSprites(r1, this.sprite));
         this.sprite.rotation = this.sprite.direction + Math.PI/2;
+        
         
         //let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
         //let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
@@ -4017,6 +4830,7 @@ class Survivor extends Creature {
               nearestSurvivorUid = survivorInfo[i].uid;
               mateFound++;
               angle = dist.angle;
+              break;
             }
           }
         }
@@ -4043,8 +4857,6 @@ class Survivor extends Creature {
               canReproduce: true,
               partnerUid: survivor.uid
             };
-
-            console.log("puede");
 
           }
         } else {

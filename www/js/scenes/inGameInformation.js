@@ -14,6 +14,15 @@ class InGameInformation {
       strokeThickness: 2
     });
 
+    this.currentDisplay = {
+      sprites :  "", 
+      predators : "", 
+      food : "",
+      iteration : "",
+      generationNumber : "", 
+      generationStats : ""
+    };
+
     //this.uiTextInfo.x = app.screen.width / 2;
     //this.uiTextInfo.y = app.screen.height - 30;
     this.setPosition(app.screen.width, app.screen.height);
@@ -52,9 +61,13 @@ class InGameInformation {
   }
 
   updateUi(sprites, predators, food, iteration, generationNumber, generationStats, fps) {
+
+    if (this.sprites != sprites || this.predators != predators || this.food != food || 
+      this.generationNumber != generationNumber || this.generationStats || generationStats) { 
     this.uiTextInfo.text = "Generation N° : " + generationNumber + " - Iteration N° : " + iteration +
       " - Best Generation Fitness : " + generationStats.BestFitness + " - [ #Food : " + food + " - #Survivors : " +
-      sprites + " - #Predators: " + predators + " ] - FPS : " + Math.round(fps);
+      sprites + " - #Predators: " + predators + " ]";
+      }
   }
 
   setPosition(width, height) {

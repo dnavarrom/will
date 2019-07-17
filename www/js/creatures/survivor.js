@@ -23,14 +23,19 @@ class Survivor extends Creature {
   findFood(foodInfo) {
 
     //checkear la comida mas cercana
+    let nearFoodArray = [];
 
+    /*
     if (this.isHumanControlled)
-      return;
+      return nearFoodArray;
+    */
 
     var nearestFoodIdx;
     var nearestFoodDistance = 1000;
     var angle;
     var foodfound = 0;
+
+    
 
     for (var j = 0; j < foodInfo.length; j++) {
 
@@ -45,6 +50,11 @@ class Survivor extends Creature {
           nearestFoodIdx = j;
           angle = dist.angle;
           foodfound++;
+
+          nearFoodArray.push(foodInfo[j]);
+
+          if (nearFoodArray.length > 3)
+            break;
         }
       }
     }
@@ -65,6 +75,8 @@ class Survivor extends Creature {
     }
 
     //console.log("FIND FOOD RESULT : " + this.nearestFoodDistance);
+
+    return nearFoodArray;
 
   }
 
@@ -93,6 +105,8 @@ class Survivor extends Creature {
     if (!this.reproductionStatus.isCopuling) {
       if (this.isHumanControlled) {
         let mousePosition = app.renderer.plugins.interaction.mouse.global;
+        //let mousePosition = app.renderer.plugins.interaction.mouse.getLocalPosition(mp);
+        app.renderer.plugins.interaction.mouse.reset();
         let r1 = {
           x : mousePosition.x,
           y : mousePosition.y
@@ -100,6 +114,7 @@ class Survivor extends Creature {
   
         this.setDirection(helper.getAngleBetweenSprites(r1, this.sprite));
         this.sprite.rotation = this.sprite.direction + Math.PI/2;
+        
         
         //let x = this.sprite.x + Math.sin(this.sprite.direction) * (this.speed); //* sprite.scale.y);
         //let y = this.sprite.y + Math.cos(this.sprite.direction) * (this.speed);
@@ -219,6 +234,7 @@ class Survivor extends Creature {
               nearestSurvivorUid = survivorInfo[i].uid;
               mateFound++;
               angle = dist.angle;
+              break;
             }
           }
         }
@@ -245,8 +261,6 @@ class Survivor extends Creature {
               canReproduce: true,
               partnerUid: survivor.uid
             };
-
-            console.log("puede");
 
           }
         } else {

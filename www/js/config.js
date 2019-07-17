@@ -2,25 +2,28 @@
 var config = {
   app: {
     width: 2000,
-    height: 1500,
+    height: 2000,
     autoSize: true,
     visual: {
       bgcolor: "0X022a31"
-    }
+    },
+    highendGPU : false //to enable / disable filters that affects FPS
   },
   world: {
-    food: 100,
-    predators: 1,
-    survivors: 45,
-    maxFoodGenerationRatio: 50,
+    food: 300,
+    predators: 3,
+    survivors: 30,
+    maxFoodGenerationRatio: 150,
     foodRegenerationThreshold: 0.15, // % of max food to regenerate food
-    maxFood: 150,
-    maxSurvivors: 90,
+    maxFood: 500,
+    maxSurvivors: 100,
+    maxSurvivorsGenerationRatio : 30,
+    survivorsRegenerationThreshold : 0.30,
     maxPredators: 3
 
   },
   evolution: {
-    generationLimit: 10,
+    generationLimit: 3,
     geneticOperators: {
       crossoverProbabilityRate: 0.3,
       specificGeneCrossoverRate: 0.5,

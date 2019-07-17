@@ -28,6 +28,7 @@ var app = new PIXI.Application({
   autoResize: true
 });
 
+
 //app.renderer.autoResize = true;
 app.renderer.view.style.position = "absolute";
 app.renderer.view.style.display = "block";
@@ -39,6 +40,7 @@ CreatureFactory.register("Predator", Predator);
 SpriteFactory.register("FoodSprite", FoodSprite);
 SpriteFactory.register("PredatorSprite", PredatorSprite);
 SpriteFactory.register("SurvivorSprite", SurvivorSprite);
+SpriteFactory.register("SelectedSprite", SelectedSprite);
 
 
 //Add the canvas that Pixi automatically created for you to the HTML document
@@ -76,7 +78,7 @@ loader
   .add("img/star.png")
   .add("img/predator.png")
   .add("img/trail.png")
-  .add("img/background-9.jpeg")
+  .add("img/background-11.png")
   .add("img/icons/rotate-screen-48.png")
   .add("img/icons/baseline_add_circle_outline_white_48dp.png")
   .load(setup);
@@ -86,7 +88,7 @@ loader
  */
 function setup() {
 
-  let texture = PIXI.loader.resources["img/background-9.jpeg"].texture;
+  let texture = PIXI.loader.resources["img/background-11.png"].texture;
   tilingSprite = new PIXI.extras.TilingSprite(
     texture,
     app.screen.width,
@@ -195,11 +197,16 @@ function run(delta) {
       world.loadFood(helper.generateRandomInteger(0, config.world.maxFoodGenerationRatio));
     }
 
+    //Regenerate survivors
+    if (world.survivorsInfo.length < config.world.maxSurvivors * config.world.survivorsRegenerationThreshold) {
+      world.initSurvivors(helper.generateRandomInteger(0, config.world.maxSurvivorsGenerationRatio));
+    }
+
     //TODO : cambiar esto, lo estoy usando para cambiar la direccion del background image, 
-    //un poco fucker. Si las iteraciones son multiplos de 200, cambio la direccion del fondo
+    //un poco fucker. Si las iteraciones son multiplos de 600, cambio la direccion del fondo
     //de pantalla. ([x,y]+desplazamiento)*switchDirection. Esto no funciona cuando quiera
     //cambiar el fondo de pantalla por otro de diferente tamaño
-    if (currentTick % 600 === 0) {
+    if (currentTick % 350 === 0) {
       switchDirection *= -1;
     }
   }
@@ -210,18 +217,26 @@ function run(delta) {
   //Update UI
   let generationNumber = world.generationStats.length;
 
+  
   inGameInformation.updateUi(world.survivorsInfo.length, world.predatorsInfo.length, world.foodInfo.length,
     iteration, generationNumber,
     world.generationStats[
       generationNumber - 1], app.ticker.FPS);
 
   //Update debug information
-  world.updateDebugInfo();
-  world.updateCreatureHudInformation();
+  if (world.debugModeOn) {
+    world.updateDebugInfo();
+  }
+
+  
+    world.updateCreatureHudInformation();
+
+    world.updateBestSurvivorInformation();
+  
 
   //move background
-  tilingSprite.tilePosition.x -= 0.1 * switchDirection;
-  tilingSprite.tilePosition.y -= 0.1 * switchDirection;
+  tilingSprite.tilePosition.x -= 0.2 * switchDirection;
+  tilingSprite.tilePosition.y -= 0.2 * switchDirection;
 
 }
 
@@ -321,6 +336,7 @@ function readDeviceOrientation() {
   }
 
 }
+
 
 document.addEventListener("keydown", onKeyDown);
 window.addEventListener("resize", resizeMe);

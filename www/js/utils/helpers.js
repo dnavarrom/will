@@ -9,6 +9,7 @@ function S4() {
 class Helpers {
   constructor() {
 
+    this.gu = new GameUtilities();
   }
 
   generateRandomInteger(min, max) {
@@ -30,6 +31,7 @@ class Helpers {
     return Math.random();
   }
 
+  
   rotateToPoint(mx, my, px, py) {
     var self = this; // TODO: que mierda es esto, revisar
     var dist_Y = my - py;
@@ -41,7 +43,9 @@ class Helpers {
     var angle = Math.atan2(dist_Y, dist_X);
     return ((angle * 180 / Math.PI) * -1);
   }
+  
 
+  
   getAngleBetweenSprites(r1, r2) {
     var dist_Y = r1.y - r2.y;
     var dist_X = r1.x - r2.x;
@@ -51,7 +55,18 @@ class Helpers {
     var angle = Math.atan2(dist_Y, dist_X);
     return angle;
   }
+  
+ 
+  /*
+  getAngleBetweenSprites(r1,r2) {
+    return this.gu.angle(r1,r2);
+  }*/
+  
 
+  getDistanceBetweenSprites(r1, r2) {
+    return this.gu.distance(r1,r2);
+  }
+  /*
   getDistanceBetweenSprites(r1, r2) {
     let vx, vy;
 
@@ -78,6 +93,20 @@ class Helpers {
 
   }
 
+  */
+
+  /*
+  CheckDistanceBetweenSprites(r1,r2) {
+    let returnData = {
+      distance: this.gu.distance(r1,r2),
+      angle: (this.gu.angle(r1,r2) * 180 / Math.PI) * -1
+    };
+    return returnData;
+  }
+
+  */
+
+  
   //TODO : esta funcion esta fucker, ademas de devolver la distancia
   // entrega el angulo, pero con rotacion wtf!!.
   CheckDistanceBetweenSprites(r1, r2) {
@@ -115,6 +144,7 @@ class Helpers {
     return returnData;
   }
 
+  
   /**
    * 
    * @param {*} r1  sprite central

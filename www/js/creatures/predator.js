@@ -19,6 +19,8 @@ class Predator extends Creature {
    */
   findSurvivors(survivorsInfo) {
 
+    return;
+    
     let nearestSurvivorUid;
     let nearestSurvivorDistance = 9000;
     let angle;
@@ -33,6 +35,8 @@ class Predator extends Creature {
           nearestSurvivorUid = survivorsInfo[i].uid;
           angle = dist.angle;
           survivorFound++;
+          //TODO: Breack cycle
+          break;
         }
       }
     }

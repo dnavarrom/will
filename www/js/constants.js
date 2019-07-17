@@ -9,6 +9,11 @@ const Constants = {
       SURVIVOR: "SURVIVOR",
       PREDATOR: "PREDATOR"
     },
+    selectionTypes : {
+      CIRCLE : "CIRCLE",
+      RECTANGLE : "RECTANGLE",
+      SQUARE : "SQUARE"
+    },
     colors: {
       RED: 0xf91800,
       BLUE: 0x000ff,

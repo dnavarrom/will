@@ -58,6 +58,7 @@ module.exports = function (grunt) {
                         "www/js/sprites/energyBarSprite.js",
                         "www/js/sprites/predatorSprite.js",
                         "www/js/sprites/survivorSprite.js",
+                        "www/js/sprites/selectedSprite.js",
                         "www/js/sprites/buttonSprite.js",
                         "www/js/creatures/*.js",
                         "www/js/stateManager.js"],

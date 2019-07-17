@@ -12,9 +12,7 @@
         "grunt-contrib-watch": "~0.6",
         "load-grunt-tasks": "^0.2.1"
     },
-    "dependencies": {
-        
-    },
+    "dependencies": {},
     "repository": {
         "type": "git",
         "url": "https://github.com/dnavarrm/will"

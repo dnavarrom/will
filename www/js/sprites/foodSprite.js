@@ -36,6 +36,7 @@ class FoodSprite extends CustomSprite {
     //this.sprite.scale.set(0.05);
     this.sprite.scale.set(1);
 
+    //TODO : change this for config.app.worldsize
     this.sprite.x = Math.random() * (this.appScreenWidth - 50);
     this.sprite.y = Math.random() * (this.appScreenHeight - 50);
 

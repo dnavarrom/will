@@ -39,12 +39,15 @@ class EnergyBarSprite extends PIXI.Text {
 
   toggleEnergyBar() {
     this.visible = !this.visible;
+    this.alpha = 0;
 
+    /*
     //TODO: solo para debug
     if (this.visible)
       this.alpha = 1;
     if (!this.visible)
       this.alpha = 1;
+      */
   }
 
 }
