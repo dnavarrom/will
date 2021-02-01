@@ -100,16 +100,32 @@ class Survivor extends Creature {
     }
   }
 
+  setMouseTarget(x,y) {
+    this.mouseTargetX = x;
+    this.mouseTargetY = y;
+  }
+
+  toggleHumanControl(value) {
+    this.isCurrentlyControlledByHuman = value;
+  }
+
+
   move() {
 
     if (!this.reproductionStatus.isCopuling) {
-      if (this.isHumanControlled) {
-        let mousePosition = app.renderer.plugins.interaction.mouse.global;
+      if (this.isHumanControlled && this.mouseTargetX && this.mouseTargetY) {
+        //let mousePosition = app.renderer.plugins.interaction.mouse.global;
+        //let mousePosition = app.renderer.plugins.interaction.mouse.originalEvent;
+
+        //console.log(app.renderer.plugins.interaction.mouse);
         //let mousePosition = app.renderer.plugins.interaction.mouse.getLocalPosition(mp);
-        app.renderer.plugins.interaction.mouse.reset();
+        //app.renderer.plugins.interaction.mouse.reset();
         let r1 = {
-          x : mousePosition.x,
-          y : mousePosition.y
+         // x : mousePosition.screenX,
+         // y : mousePosition.screenY
+         
+         x : this.mouseTargetX,
+         y : this.mouseTargetY
         };
   
         this.setDirection(helper.getAngleBetweenSprites(r1, this.sprite));
@@ -418,11 +434,31 @@ class Survivor extends Creature {
   /**
    * When eat, add energy
    */
-  eat() {
-    this.numBugEated++;
-    if (this.energy + 1 <= config.creature.maxEnergy)
-      this.energy += 1;
-    this.nearestFoodDistance = 1000;
-    this.nearestFoodIdx = 9999;
+  eat(food) {
+    
+    if (food) {
+      let foodEnergyValue = 0;
+      switch (food.foodType) {
+        case Constants.foodTypes.SMALL:
+            foodEnergyValue = 1;
+            break;
+        case Constants.foodTypes.MEDIUM:
+          foodEnergyValue = 2;
+          break;
+      case Constants.foodTypes.LARGE:
+          foodEnergyValue = 3;
+      default:
+          foodEnergyValue = 1;
+          break;
+      }
+      this.numBugEated++;
+        if (this.energy + foodEnergyValue <= config.creature.maxEnergy)
+          this.energy += foodEnergyValue;
+        else
+          this.energy = config.creature.maxEnergy;
+        this.nearestFoodDistance = 1000;
+        this.nearestFoodIdx = 9999;
+      }
+    
   }
 }

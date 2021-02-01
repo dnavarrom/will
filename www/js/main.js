@@ -41,7 +41,7 @@ SpriteFactory.register("FoodSprite", FoodSprite);
 SpriteFactory.register("PredatorSprite", PredatorSprite);
 SpriteFactory.register("SurvivorSprite", SurvivorSprite);
 SpriteFactory.register("SelectedSprite", SelectedSprite);
-
+SpriteFactory.register("CursorSprite", CursorSprite);
 
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild(app.renderer.view);
@@ -341,3 +341,7 @@ function readDeviceOrientation() {
 document.addEventListener("keydown", onKeyDown);
 window.addEventListener("resize", resizeMe);
 window.onorientationchange = readDeviceOrientation;
+app.renderer.plugins.interaction.on( 'pointerdown', ( event ) => { 
+  world.setHumanControlledMousePosition(event.data.global.x, event.data.global.y);
+  //console.log( event ) 
+} );

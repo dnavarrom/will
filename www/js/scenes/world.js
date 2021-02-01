@@ -14,6 +14,8 @@ class World {
     this.debugInfo = [];
     this.creatureHudInfo = [];
     this.bestSurvivorInfo = [];
+    this.mousePointerInfo = [];
+    this.humanControledUid;
 
     this.b = b; //bump
 
@@ -107,6 +109,14 @@ class World {
       alpha: true
     });
 
+
+    this.mousePointerContainer = new PIXI.ParticleContainer(1, {
+      scale: true,
+      position: true,
+      rotation: true,
+      uvs: true,
+      alpha: true
+    });
     //app.stage.addChild(this.targetMateLineContainer);
 
     this.containers = {
@@ -116,7 +126,8 @@ class World {
       debugContainer: this.debugContainer,
       creatureHudContainer: this.creatureHudContainer,
       targetMateLineContainer: this.targetMateLineContainer,
-      bestSurvivorCointainer : this.bestSurvivorCointainer
+      bestSurvivorCointainer : this.bestSurvivorCointainer,
+      mousePointerContainer : this.mousePointerContainer
     };
 
     this.worldInfo = {
@@ -146,6 +157,7 @@ class World {
     this.viewport.addChild(this.containers.predatorsContainer);
     this.viewport.addChild(this.containers.creatureHudContainer);
     this.viewport.addChild(this.containers.bestSurvivorCointainer);
+    this.viewport.addChild(this.containers.mousePointerContainer);
     
     this.viewport
     .drag()
@@ -337,7 +349,8 @@ class World {
             screenWidth: app.screen.width,
             screenHeight: app.screen.height,
             i: this.survivorsInfo.length,
-            isHumanControlled : population[i].isHumanControlled
+            isHumanControlled : population[i].isHumanControlled,
+            isCurrentlyControlledByHuman : false
           })
           .getSprite()
       }
@@ -572,7 +585,7 @@ class World {
                     this.foodContainer.removeChild(food);
                     //this.foodInfo.splice(food.idx, 1);
                     this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
-                    this.survivorsInfo[i].eat();
+                    this.survivorsInfo[i].eat(food);
                     //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
                   }
               }
@@ -737,7 +750,7 @@ class World {
   /** to show best Survivor */
   showBestSurvivor(survivor) {
     let srv = this.bestSurvivorInfo.find(o=> o.uid == survivor.uid);
-    if (srv == undefined) {
+     if (srv == undefined) {
       let spt = SpriteFactory.create("SelectedSprite", {
       uid : survivor.uid,
       screenWidth: app.screen.width,
@@ -781,13 +794,15 @@ class World {
           screenWidth: app.screen.width,
           screenHeight: app.screen.height,
           i: this.survivorsInfo.length,
-          isHumanControlled :true
+          isHumanControlled :true,
+          isCurrentlyControlledByHuman : true
         })
         .getSprite()
     }
 
     let p = CreatureFactory.create("Survivor", opt);
 
+    this.humanControledUid = p.uid;
     this.survivorsInfo.push(p);
     this.survivorsContainer.addChild(p.sprite);
     this.addDebugInfo(p);
@@ -796,7 +811,77 @@ class World {
 
 
     app.stage.interactive = true;
+    this.viewport.follow(p.sprite, null);
 
+  }
+
+
+  //Ambas funciones para poder intercambiar survivors controlados
+  /*
+  getHumanControlledSurvivorUid() {
+    for (var i = 0; i < this.survivorsInfo.length; i++) {
+      if(this.survivorsInfo[i].isCurrentlyControlledByHuman)
+        return this.survivorsInfo[i].uid;
+    }
+  }
+
+  */
+
+  /*
+  swapHumanControlledSurvivor(uid) {
+
+    let arrTemp = [];
+
+    for (var i = 0; i < this.survivorsInfo.length; i++) {
+      if(this.survivorsInfo[i],isHumanControlled)
+        arrTemp.push(this.survivorsInfo[i]);
+    }
+
+    for (var i = 0; i < this.survivorsInfo.length; i++) {
+      if (this.survivorsInfo[i].uid != uid) { 
+        this.survivorsInfo[i]
+      }
+    }
+  }
+  */
+
+  setHumanControlledMousePosition(x,y) {
+    let srv = this.survivorsInfo.find(o=> o.uid == this.humanControledUid);
+    if (srv != undefined) {
+      let point = this.viewport.toWorld(x,y);
+      srv.setMouseTarget(point.x,point.y);
+
+      if (this.mousePointerContainer.children.length > 0) {
+        let cursor = this.mousePointerContainer.getChildAt(0);
+        console.log(cursor);
+        if (cursor != undefined) {
+          cursor.x = point.x;
+          cursor.y = point.y;
+        }
+      }
+      else {
+        let spt = SpriteFactory.create("CursorSprite", {
+          uid : helper.generateGuid(),
+          screenWidth: app.screen.width,
+          screenHeight: app.screen.height,
+          radius : 3,
+          x : point.x,
+          y : point.y,
+          //i: this.mousePointerContainer.length,
+          selectionType : Constants.selectionTypes.CIRCLE,
+          hasText : true,
+          text : "target"
+        }); 
+       this.mousePointerContainer.addChild(spt);
+       
+      }
+
+      
+
+      //this.mousePointerContainer.removeChild(this.mousePointerContainer[0]);
+      
+
+    }
   }
 
   

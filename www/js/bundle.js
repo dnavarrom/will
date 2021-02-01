@@ -2714,6 +2714,8 @@ class World {
     this.debugInfo = [];
     this.creatureHudInfo = [];
     this.bestSurvivorInfo = [];
+    this.mousePointerInfo = [];
+    this.humanControledUid;
 
     this.b = b; //bump
 
@@ -2807,6 +2809,14 @@ class World {
       alpha: true
     });
 
+
+    this.mousePointerContainer = new PIXI.ParticleContainer(1, {
+      scale: true,
+      position: true,
+      rotation: true,
+      uvs: true,
+      alpha: true
+    });
     //app.stage.addChild(this.targetMateLineContainer);
 
     this.containers = {
@@ -2816,7 +2826,8 @@ class World {
       debugContainer: this.debugContainer,
       creatureHudContainer: this.creatureHudContainer,
       targetMateLineContainer: this.targetMateLineContainer,
-      bestSurvivorCointainer : this.bestSurvivorCointainer
+      bestSurvivorCointainer : this.bestSurvivorCointainer,
+      mousePointerContainer : this.mousePointerContainer
     };
 
     this.worldInfo = {
@@ -2846,6 +2857,7 @@ class World {
     this.viewport.addChild(this.containers.predatorsContainer);
     this.viewport.addChild(this.containers.creatureHudContainer);
     this.viewport.addChild(this.containers.bestSurvivorCointainer);
+    this.viewport.addChild(this.containers.mousePointerContainer);
     
     this.viewport
     .drag()
@@ -3037,7 +3049,8 @@ class World {
             screenWidth: app.screen.width,
             screenHeight: app.screen.height,
             i: this.survivorsInfo.length,
-            isHumanControlled : population[i].isHumanControlled
+            isHumanControlled : population[i].isHumanControlled,
+            isCurrentlyControlledByHuman : false
           })
           .getSprite()
       }
@@ -3272,7 +3285,7 @@ class World {
                     this.foodContainer.removeChild(food);
                     //this.foodInfo.splice(food.idx, 1);
                     this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
-                    this.survivorsInfo[i].eat();
+                    this.survivorsInfo[i].eat(food);
                     //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
                   }
               }
@@ -3437,7 +3450,7 @@ class World {
   /** to show best Survivor */
   showBestSurvivor(survivor) {
     let srv = this.bestSurvivorInfo.find(o=> o.uid == survivor.uid);
-    if (srv == undefined) {
+     if (srv == undefined) {
       let spt = SpriteFactory.create("SelectedSprite", {
       uid : survivor.uid,
       screenWidth: app.screen.width,
@@ -3481,13 +3494,15 @@ class World {
           screenWidth: app.screen.width,
           screenHeight: app.screen.height,
           i: this.survivorsInfo.length,
-          isHumanControlled :true
+          isHumanControlled :true,
+          isCurrentlyControlledByHuman : true
         })
         .getSprite()
     }
 
     let p = CreatureFactory.create("Survivor", opt);
 
+    this.humanControledUid = p.uid;
     this.survivorsInfo.push(p);
     this.survivorsContainer.addChild(p.sprite);
     this.addDebugInfo(p);
@@ -3496,7 +3511,77 @@ class World {
 
 
     app.stage.interactive = true;
+    this.viewport.follow(p.sprite, null);
 
+  }
+
+
+  //Ambas funciones para poder intercambiar survivors controlados
+  /*
+  getHumanControlledSurvivorUid() {
+    for (var i = 0; i < this.survivorsInfo.length; i++) {
+      if(this.survivorsInfo[i].isCurrentlyControlledByHuman)
+        return this.survivorsInfo[i].uid;
+    }
+  }
+
+  */
+
+  /*
+  swapHumanControlledSurvivor(uid) {
+
+    let arrTemp = [];
+
+    for (var i = 0; i < this.survivorsInfo.length; i++) {
+      if(this.survivorsInfo[i],isHumanControlled)
+        arrTemp.push(this.survivorsInfo[i]);
+    }
+
+    for (var i = 0; i < this.survivorsInfo.length; i++) {
+      if (this.survivorsInfo[i].uid != uid) { 
+        this.survivorsInfo[i]
+      }
+    }
+  }
+  */
+
+  setHumanControlledMousePosition(x,y) {
+    let srv = this.survivorsInfo.find(o=> o.uid == this.humanControledUid);
+    if (srv != undefined) {
+      let point = this.viewport.toWorld(x,y);
+      srv.setMouseTarget(point.x,point.y);
+
+      if (this.mousePointerContainer.children.length > 0) {
+        let cursor = this.mousePointerContainer.getChildAt(0);
+        console.log(cursor);
+        if (cursor != undefined) {
+          cursor.x = point.x;
+          cursor.y = point.y;
+        }
+      }
+      else {
+        let spt = SpriteFactory.create("CursorSprite", {
+          uid : helper.generateGuid(),
+          screenWidth: app.screen.width,
+          screenHeight: app.screen.height,
+          radius : 3,
+          x : point.x,
+          y : point.y,
+          //i: this.mousePointerContainer.length,
+          selectionType : Constants.selectionTypes.CIRCLE,
+          hasText : true,
+          text : "target"
+        }); 
+       this.mousePointerContainer.addChild(spt);
+       
+      }
+
+      
+
+      //this.mousePointerContainer.removeChild(this.mousePointerContainer[0]);
+      
+
+    }
   }
 
   
@@ -3687,8 +3772,8 @@ const SpriteFactory = {
 /* eslint-disable */
 var config = {
   app: {
-    width: 2000,
-    height: 2000,
+    width: 4000,
+    height: 4000,
     autoSize: true,
     visual: {
       bgcolor: "0X022a31"
@@ -3718,9 +3803,9 @@ var config = {
     }
   },
   creature: {
-    adultAge: 5,
-    elderAge: 10,
-    livingTimeLimit: 15,
+    adultAge: 10,
+    elderAge: 30,
+    livingTimeLimit: 60,
     minVisionRange: 50,
     maxVisionRange: 200,
     maxEnergy: 10
@@ -3738,6 +3823,11 @@ const Constants = {
     creatureTypes: {
       SURVIVOR: "SURVIVOR",
       PREDATOR: "PREDATOR"
+    },
+    foodTypes : {
+      SMALL : "SMALL",
+      MEDIUM : "MEDIUM",
+      LARGE : "LARGE"
     },
     selectionTypes : {
       CIRCLE : "CIRCLE",
@@ -3846,15 +3936,37 @@ class FoodSprite extends CustomSprite {
     super(opt);
     this.appScreenWidth;
     this.appScreenHeight;
-
     this.init(opt.screenWidth, opt.screenHeight, opt.i);
   }
 
   init(screenWidth, screenHeight, i) {
 
     let graphics = new PIXI.Graphics;
+    let foodTypeCode = helper.generateRandomInteger(0,2) //0 normal, 1 medium, 2 large
     graphics.beginFill(Constants.colors.LIGHTGREY);
-    graphics.drawCircle(10, 10, 2);
+
+    switch(foodTypeCode) {
+      case 0:
+          this.foodType = Constants.foodTypes.SMALL;
+          graphics.drawCircle(10, 10, 2);
+          break;
+
+      case 1:
+          this.foodType = Constants.foodTypes.MEDIUM;
+          graphics.drawCircle(10, 10, 3);
+          break;
+
+      case 2:
+        this.foodType = Constants.foodTypes.LARGE;
+        graphics.drawCircle(10, 10, 4);
+        break;
+
+      default:
+        this.foodType = Constants.foodTypes.SMALL;
+        graphics.drawCircle(10, 10, 2);
+        break;
+    }
+
     graphics.endFill();
     let texture = new PIXI.Texture(app.renderer.generateTexture(graphics));
     this.sprite = new PIXI.Sprite(texture);
@@ -3866,6 +3978,7 @@ class FoodSprite extends CustomSprite {
     this.sprite.idx = i;
     this.uid = helper.generateGuid();
     this.sprite.uid = this.uid;
+    this.sprite.foodType = this.foodType;
     this.setParameters();
     super.setBehavior();
   };
@@ -3985,7 +4098,7 @@ class PredatorSprite extends CustomSprite {
   }
 
   setParameters() {
-    this.sprite.anchor.set(0.5);
+    this.sprite.anchor.set(0.5, 0.5);
     this.sprite.scale.set(0.8 + Math.random() * 0.3);
     this.sprite.dudeBounds = this.getBounds();
     this.sprite.tint = Constants.colors.WHITE;
@@ -4029,14 +4142,13 @@ class SurvivorSprite extends CustomSprite {
     this.appScreenHeight = opt.screenHeight;
     this.idx = opt.i;
     this.isHumanControlled = (  opt.isHumanControlled && opt.isHumanControlled == true) ? true : false;
-
     this.setParameters();
 
     super.setBehavior();
   }
 
   setParameters() {
-    this.sprite.anchor.set(0.5);
+    this.sprite.anchor.set(0.5,0.5);
     this.sprite.scale.set(0.2);
     this.sprite.dudeBounds = super.getBounds();
     //this.sprite.tint = Constants.colors.BLUE;
@@ -4312,6 +4424,98 @@ class Button extends CustomSprite {
 
 }
 
+/* eslint-disable */
+class CursorSprite extends CustomSprite {
+
+    constructor(opt) {
+      super(opt);
+  
+      
+      this.radius = opt.radius;
+      this.uid = opt.uid; 
+  
+      this.init(opt);
+  
+    }
+  
+    init(opt) {
+  
+      let gfx = new PIXI.Graphics();
+  
+      // set the x, y and anchor
+      this.x = opt.x;
+      this.y = opt.y;
+      this.anchor.set(0.5);
+  
+      switch (opt.selectionType) {
+        case Constants.selectionTypes.RECTANGLE:
+          throw new error ("Not implemented yet");
+          break;
+        case Constants.selectionTypes.CIRCLE:
+          this.texture = this.circleSelection(gfx);
+          break;
+        default:
+          console.log("SelectionType not defined, using default circle");
+          this.texture = this.circleSelection(gfx);
+      }
+  
+  
+      
+  
+      // create the text object
+  
+      if (opt.hasText) {
+        this.text = new PIXI.Text("", 'arial');
+        this.text.anchor = new PIXI.Point(0.5, 0.5);
+        this.addChild(this.text);
+        this.setText(opt.text, null);
+      }
+  
+  
+    }
+  
+    circleSelection(gfx) {
+      gfx.beginFill(Constants.colors.YELLOW, 0,3);
+      gfx.lineStyle(1, Constants.colors.YELLOW, 1);
+      gfx.drawCircle(this.x, this.y, this.radius);
+      gfx.endFill();
+      return gfx.generateTexture();
+    }
+  
+  
+    
+  
+    setText(val, style) {
+  
+      // Set text to be the value passed as a parameter
+      this.text.text = val;
+      // Set style of text to the style passed as a parameter
+      if (style) {
+        this.text.style = style;
+      } else {
+        this.text.style = new PIXI.TextStyle({
+          fontFamily: 'Arial', // Font Family
+          fontSize: 10, // Font Size
+          //fontStyle: 'italic',// Font Style
+          //fontWeight: 'bold', // Font Weight
+          fill: [Constants.colors.BLACK], // gradient
+          //fill: ['#ffffff', '#F8A9F9'], // gradient
+          //stroke: '#4a1850',
+          //strokeThickness: 5,
+          //dropShadow: true,
+          //dropShadowColor: '#000000',
+          //dropShadowBlur: 4,
+          //dropShadowAngle: Math.PI / 6,
+          //dropShadowDistance: 6,
+          //wordWrap: true,
+          //wordWrapWidth: 150
+        });
+      }
+  
+    }
+  
+  }
+  
 const GenerateRandomParameters = function() {
   let parameters = {};
 
@@ -4379,6 +4583,7 @@ class Creature {
     this.isCopuling = false;
     this.isFindingMate = false; //quiere follar
     this.isHumanControlled = opt.isHumanControlled;
+    this.isCurrentlyControlledByHuman = opt.isCurrentlyControlledByHuman;
 
     //counters
     this.reproductionTimer = 0;
@@ -4696,16 +4901,32 @@ class Survivor extends Creature {
     }
   }
 
+  setMouseTarget(x,y) {
+    this.mouseTargetX = x;
+    this.mouseTargetY = y;
+  }
+
+  toggleHumanControl(value) {
+    this.isCurrentlyControlledByHuman = value;
+  }
+
+
   move() {
 
     if (!this.reproductionStatus.isCopuling) {
-      if (this.isHumanControlled) {
-        let mousePosition = app.renderer.plugins.interaction.mouse.global;
+      if (this.isHumanControlled && this.mouseTargetX && this.mouseTargetY) {
+        //let mousePosition = app.renderer.plugins.interaction.mouse.global;
+        //let mousePosition = app.renderer.plugins.interaction.mouse.originalEvent;
+
+        //console.log(app.renderer.plugins.interaction.mouse);
         //let mousePosition = app.renderer.plugins.interaction.mouse.getLocalPosition(mp);
-        app.renderer.plugins.interaction.mouse.reset();
+        //app.renderer.plugins.interaction.mouse.reset();
         let r1 = {
-          x : mousePosition.x,
-          y : mousePosition.y
+         // x : mousePosition.screenX,
+         // y : mousePosition.screenY
+         
+         x : this.mouseTargetX,
+         y : this.mouseTargetY
         };
   
         this.setDirection(helper.getAngleBetweenSprites(r1, this.sprite));
@@ -5014,12 +5235,32 @@ class Survivor extends Creature {
   /**
    * When eat, add energy
    */
-  eat() {
-    this.numBugEated++;
-    if (this.energy + 1 <= config.creature.maxEnergy)
-      this.energy += 1;
-    this.nearestFoodDistance = 1000;
-    this.nearestFoodIdx = 9999;
+  eat(food) {
+    
+    if (food) {
+      let foodEnergyValue = 0;
+      switch (food.foodType) {
+        case Constants.foodTypes.SMALL:
+            foodEnergyValue = 1;
+            break;
+        case Constants.foodTypes.MEDIUM:
+          foodEnergyValue = 2;
+          break;
+      case Constants.foodTypes.LARGE:
+          foodEnergyValue = 3;
+      default:
+          foodEnergyValue = 1;
+          break;
+      }
+      this.numBugEated++;
+        if (this.energy + foodEnergyValue <= config.creature.maxEnergy)
+          this.energy += foodEnergyValue;
+        else
+          this.energy = config.creature.maxEnergy;
+        this.nearestFoodDistance = 1000;
+        this.nearestFoodIdx = 9999;
+      }
+    
   }
 }
 

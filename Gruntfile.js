@@ -60,6 +60,7 @@ module.exports = function (grunt) {
                         "www/js/sprites/survivorSprite.js",
                         "www/js/sprites/selectedSprite.js",
                         "www/js/sprites/buttonSprite.js",
+                        "www/js/sprites/cursorSprite.js",
                         "www/js/creatures/*.js",
                         "www/js/stateManager.js"],
                 dest : "www/js/bundle.js"

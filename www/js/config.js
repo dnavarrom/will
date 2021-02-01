@@ -1,8 +1,8 @@
 /* eslint-disable */
 var config = {
   app: {
-    width: 2000,
-    height: 2000,
+    width: 4000,
+    height: 4000,
     autoSize: true,
     visual: {
       bgcolor: "0X022a31"
@@ -32,9 +32,9 @@ var config = {
     }
   },
   creature: {
-    adultAge: 5,
-    elderAge: 10,
-    livingTimeLimit: 15,
+    adultAge: 10,
+    elderAge: 30,
+    livingTimeLimit: 60,
     minVisionRange: 50,
     maxVisionRange: 200,
     maxEnergy: 10

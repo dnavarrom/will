@@ -9,6 +9,11 @@ const Constants = {
       SURVIVOR: "SURVIVOR",
       PREDATOR: "PREDATOR"
     },
+    foodTypes : {
+      SMALL : "SMALL",
+      MEDIUM : "MEDIUM",
+      LARGE : "LARGE"
+    },
     selectionTypes : {
       CIRCLE : "CIRCLE",
       RECTANGLE : "RECTANGLE",

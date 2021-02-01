@@ -19,7 +19,7 @@ class PredatorSprite extends CustomSprite {
   }
 
   setParameters() {
-    this.sprite.anchor.set(0.5);
+    this.sprite.anchor.set(0.5, 0.5);
     this.sprite.scale.set(0.8 + Math.random() * 0.3);
     this.sprite.dudeBounds = this.getBounds();
     this.sprite.tint = Constants.colors.WHITE;

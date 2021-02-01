@@ -65,6 +65,7 @@ class Creature {
     this.isCopuling = false;
     this.isFindingMate = false; //quiere follar
     this.isHumanControlled = opt.isHumanControlled;
+    this.isCurrentlyControlledByHuman = opt.isCurrentlyControlledByHuman;
 
     //counters
     this.reproductionTimer = 0;

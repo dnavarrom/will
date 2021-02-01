@@ -30,14 +30,13 @@ class SurvivorSprite extends CustomSprite {
     this.appScreenHeight = opt.screenHeight;
     this.idx = opt.i;
     this.isHumanControlled = (  opt.isHumanControlled && opt.isHumanControlled == true) ? true : false;
-
     this.setParameters();
 
     super.setBehavior();
   }
 
   setParameters() {
-    this.sprite.anchor.set(0.5);
+    this.sprite.anchor.set(0.5,0.5);
     this.sprite.scale.set(0.2);
     this.sprite.dudeBounds = super.getBounds();
     //this.sprite.tint = Constants.colors.BLUE;
