@@ -14,6 +14,11 @@ const Constants = {
       MEDIUM : "MEDIUM",
       LARGE : "LARGE"
     },
+    powerUpTypes : {
+      SPEED: "SPEED",
+      ENERGY: "ENERGY",
+      TELEPORT: "TELEPORT"
+    },
     selectionTypes : {
       CIRCLE : "CIRCLE",
       RECTANGLE : "RECTANGLE",
@@ -23,6 +28,7 @@ const Constants = {
       RED: 0xf91800,
       BLUE: 0x000ff,
       BLUEYALE: 0x0E4D92,
+      LIGHTBLUE: 0xADD8E6,
       GREY: 0xb6b6ba,
       DARKGREY: 0x313335,
       LIGHTGREY: 0xD3D3D3,
@@ -30,7 +36,8 @@ const Constants = {
       GREEN: 0x00FF00,
       ORANGE: 0xFC6600,
       BLACK : 0X000000,
-      YELLOW : 0XFFFF00	
+      YELLOW : 0XFFFF00,
+      PURPLE: 0x663399
     },
     simulationStates: {
       RUN: "run",

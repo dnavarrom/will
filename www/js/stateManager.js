@@ -17,6 +17,7 @@ class StateManager {
           this.scenes.splash.hideScene();
           this.scenes.rotation.hideScene();
           this.scenes.inGameInformation.hideScene();
+          this.scenes.playerInformation.hideScene();
           this.scenes.uiControls.hideScene();
           break;
 
@@ -33,6 +34,7 @@ class StateManager {
           this.scenes.splash.hideScene();
           this.scenes.rotation.showScene();
           this.scenes.inGameInformation.hideScene();
+          this.scenes.playerInformation.hideScene();
           this.scenes.uiControls.hideScene();
           break;
 
@@ -41,8 +43,10 @@ class StateManager {
           this.scenes.splash.showScene();
           this.scenes.rotation.hideScene();
           this.scenes.inGameInformation.hideScene();
+          this.scenes.playerInformation.hideScene();
           this.scenes.uiControls.hideScene();
           break;
+
       }
 
     }

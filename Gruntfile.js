@@ -55,6 +55,7 @@ module.exports = function (grunt) {
                         "www/js/constants.js",
                         "www/js/sprites/customSprite.js",
                         "www/js/sprites/foodSprite.js",
+                        "www/js/sprites/powerupSprite.js",
                         "www/js/sprites/energyBarSprite.js",
                         "www/js/sprites/predatorSprite.js",
                         "www/js/sprites/survivorSprite.js",

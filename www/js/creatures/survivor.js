@@ -80,6 +80,75 @@ class Survivor extends Creature {
 
   }
 
+
+  
+  /**
+   * Find nearest powerup to pursue
+   * @param {Array} powerupInfo 
+   */
+  findPowerup(powerupInfo) {
+
+    //checkear la comida mas cercana
+    let nearPowerupArray = [];
+
+    /*
+    if (this.isHumanControlled)
+      return nearFoodArray;
+    */
+
+    //var nearestPowerupIdx;
+    var nearestPowerupDistance = 1000;
+    var angle;
+    var powerupfound = 0;
+
+    
+
+    for (var j = 0; j < powerupInfo.length; j++) {
+
+      let dist = helper.CheckDistanceBetweenSprites(this.sprite, powerupInfo[j]);
+
+      if (nearestPowerupDistance > dist.distance) {
+
+        if (dist.distance < this.visionRange && !powerupInfo[j].eated) {
+          //console.log("comida cercana " + dude.nearestFoodDistance + " - distancia : " + dist.distance + " - angle : " +dist.angle + " - dudeDirection : " + dude.direction);
+
+          nearestPowerupDistance = dist.distance;
+          //nearestPowerupIdx = j;
+          angle = dist.angle;
+          powerupfound++;
+
+          nearPowerupArray.push(powerupInfo[j]);
+
+          //TODO: Revisar ya que no tiene sentido (originalmente era poblar un array de 3 powerups, solo necesito 1)
+          if (nearPowerupArray.length > 0)
+            break;
+        }
+      }
+    }
+
+    //asignar target al worm
+
+    if (powerupfound == 0) {
+      //sprite.tint = 0xFF0000;
+      //dude.direction = Math.random() * Math.PI * 2;
+      this.isBlind = true;
+    } else {
+      //asigno target normalmente
+      this.nearestPowerupDistance = nearestPowerupDistance;
+      //this.nearestPowerupIdx = nearestPowerupIdx;
+      this.setDirection(angle);
+      this.isBlind = false;
+
+    }
+
+    //console.log("FIND FOOD RESULT : " + this.nearestFoodDistance);
+
+    return nearPowerupArray;
+
+  }
+
+
+
   getCurrentStatus() {
 
     if (this.reproductionStatus.isCopuling) {
@@ -461,4 +530,32 @@ class Survivor extends Creature {
       }
     
   }
+
+  /**
+   * When eat, add energy
+   */
+  eatPowerup(powerup) {
+    
+    if (powerup) {
+    
+      logger.log("survivor.js", "GOT POWERUP : " + powerup.powerUpType);
+
+      switch (powerup.powerUpType) {
+        case Constants.powerUpTypes.ENERGY:
+            this.energy = config.creature.maxEnergy;
+            break;
+        case Constants.powerUpTypes.SPEED:
+          this.incrementSpeed(Math.random());
+          break;
+      case Constants.powerUpTypes.TELEPORT:
+          this.setPosition(helper.generateRandomInteger(100, config.app.width),helper.generateRandomInteger(100, config.app.height));
+          break;
+      default:
+          break;
+      }
+      this.nearestPowerupDistance = 10000;
+        
+      }
+    
+    }
 }

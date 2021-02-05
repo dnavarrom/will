@@ -89,4 +89,15 @@ class FoodSprite extends CustomSprite {
     return foodBounds;
   }
 
+  getBasicData() {
+    return {
+      uid : this.uid,
+      x : this.x,
+      y : this.y,
+      speed : this.sprite.speed,
+      direction: this.direction,
+      turningSpeed : this.turningSpeed
+    }
+  }
+
 }

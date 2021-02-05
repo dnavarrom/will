@@ -2,6 +2,7 @@ let loader = PIXI.loader;
 
 let b = new Bump(PIXI);
 let helper = new Helpers();
+let logger = new Logger();
 
 //Mobile device detection
 //1 = normal / 2 : retina
@@ -38,6 +39,7 @@ app.renderer.view.style.display = "block";
 CreatureFactory.register("Survivor", Survivor);
 CreatureFactory.register("Predator", Predator);
 SpriteFactory.register("FoodSprite", FoodSprite);
+SpriteFactory.register("PowerupSprite", PowerupSprite);
 SpriteFactory.register("PredatorSprite", PredatorSprite);
 SpriteFactory.register("SurvivorSprite", SurvivorSprite);
 SpriteFactory.register("SelectedSprite", SelectedSprite);
@@ -55,7 +57,8 @@ var tilingSprite; //movimiento del fondo de pantalla
 var splashScreen; //container
 var deviceRotationScreen; //container
 var world; //main simulation
-var inGameInformation; //
+var inGameInformation; // simulation status world
+var playerInformation; //score energy
 var uiControls;
 
 
@@ -114,6 +117,9 @@ function setup() {
   //Scene 4: UI Controls
   uiControls = new UiControls(app);
 
+  //Scene 5: PlayerInformation - Score
+  playerInformation = new PlayerInformation(app);
+
   
 
   //Collect Scenes:
@@ -123,6 +129,7 @@ function setup() {
       splash: splashScreen,
       rotation: deviceRotationScreen,
       inGameInformation: inGameInformation,
+      playerInformation : playerInformation,
       uiControls: uiControls
     }
   };
@@ -164,8 +171,13 @@ function run(delta) {
   // iterate through the eaters and find survivors to eat
   world.processPredator();
 
+    /* move powerups */
+    world.processPowerup();
+
   /* Process food */
   world.processFood();
+
+
 
   /* Process events */
   uiControls.processEvents(world);
@@ -197,6 +209,11 @@ function run(delta) {
       world.loadFood(helper.generateRandomInteger(0, config.world.maxFoodGenerationRatio));
     }
 
+    //Regenerate PowerUps
+    if (world.powerupInfo.length < config.world.maxPowerups * config.world.powerupRegenerationThreshold) {
+      world.loadPowerups(helper.generateRandomInteger(0, config.world.maxPowerupGenerationRatio));
+    }
+
     //Regenerate survivors
     if (world.survivorsInfo.length < config.world.maxSurvivors * config.world.survivorsRegenerationThreshold) {
       world.initSurvivors(helper.generateRandomInteger(0, config.world.maxSurvivorsGenerationRatio));
@@ -206,7 +223,7 @@ function run(delta) {
     //un poco fucker. Si las iteraciones son multiplos de 600, cambio la direccion del fondo
     //de pantalla. ([x,y]+desplazamiento)*switchDirection. Esto no funciona cuando quiera
     //cambiar el fondo de pantalla por otro de diferente tamaño
-    if (currentTick % 350 === 0) {
+    if (currentTick % 250 === 0) {
       switchDirection *= -1;
     }
   }
@@ -232,6 +249,18 @@ function run(delta) {
     world.updateCreatureHudInformation();
 
     world.updateBestSurvivorInformation();
+
+
+    //TODO: optimize to check state machine before querying world to get human controlled survivor.
+    //update player information (score / energy)
+    let playerStatus = world.getHumanControlledSurvivor();
+    //if there is no human controlled player, this should be undefined
+    if (playerStatus) {
+      if (playerInformation.isVisible() == false) {
+        playerInformation.showScene();
+      }
+      playerInformation.updateUi(playerStatus);
+    }
   
 
   //move background
@@ -293,6 +322,8 @@ function resizeMe() {
   deviceRotationScreen.setPosition(appWidth, appHeight);
   if (inGameInformation)
     inGameInformation.setPosition(appWidth, appHeight);
+  if(playerInformation)
+    playerInformation.setPosition(appWidth, appHeight);
 }
 
 function readDeviceOrientation() {
@@ -343,5 +374,23 @@ window.addEventListener("resize", resizeMe);
 window.onorientationchange = readDeviceOrientation;
 app.renderer.plugins.interaction.on( 'pointerdown', ( event ) => { 
   world.setHumanControlledMousePosition(event.data.global.x, event.data.global.y);
-  //console.log( event ) 
 } );
+
+/*
+//Socket.io
+var ipAddress = "localhost";
+var port = "3000";
+const socket = io("http://localhost:3000");
+socket.on("connect", function onsocketConnected () {
+	console.log("connected to server"); 
+});
+
+socket.on('removePlayer', function(data){
+	console.log(data);
+});
+
+socket.on('update', function(data) {
+  
+})
+
+*/

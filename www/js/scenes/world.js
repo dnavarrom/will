@@ -10,6 +10,7 @@ class World {
     this.childInfo = [];
     this.predatorsInfo = [];
     this.foodInfo = [];
+    this.powerupInfo = [];
     this.targetMateLineInfo = [];
     this.debugInfo = [];
     this.creatureHudInfo = [];
@@ -23,6 +24,7 @@ class World {
     this.totalSurvivors = config.world.survivors;
     this.totalPredators = config.world.predators;
     this.totalFood = config.world.food;
+    this.totalPowerups = config.world.powerups;
 
     //collect status
     this.deadSurvivors = [];
@@ -41,7 +43,7 @@ class World {
     }
     else
     {
-      this.survivorsContainer = new PIXI.ParticleContainer(10000, {
+      this.survivorsContainer = new PIXI.ParticleContainer(2000, {
         scale: true,
         position: true,
         rotation: true,
@@ -63,6 +65,14 @@ class World {
     //app.stage.addChild(this.predatorsContainer);
 
     this.foodContainer = new PIXI.particles.ParticleContainer(1000, {
+      scale: true,
+      position: true,
+      rotation: true,
+      uvs: true,
+      alpha: true
+    });
+
+    this.powerupContainer = new PIXI.particles.ParticleContainer(1000, {
       scale: true,
       position: true,
       rotation: true,
@@ -123,6 +133,7 @@ class World {
       predatorsContainer: this.predatorsContainer,
       survivorsContainer: this.survivorsContainer,
       foodContainer: this.foodContainer,
+      powerupContainer : this.powerupContainer,
       debugContainer: this.debugContainer,
       creatureHudContainer: this.creatureHudContainer,
       targetMateLineContainer: this.targetMateLineContainer,
@@ -135,6 +146,7 @@ class World {
       childInfo: this.childInfo,
       predatorsInfo: this.predatorsInfo,
       foodInfo: this.foodInfo,
+      powerupInfo: this.powerupInfo,
       debugInfo: this.debugInfo,
       creatureHudInfo: this.creatureHudInfo,
       targetMateLineInfo: this.targetMateLineInfo,
@@ -154,6 +166,7 @@ class World {
 
     this.viewport.addChild(this.containers.survivorsContainer);
     this.viewport.addChild(this.containers.foodContainer);
+    this.viewport.addChild(this.containers.powerupContainer);
     this.viewport.addChild(this.containers.predatorsContainer);
     this.viewport.addChild(this.containers.creatureHudContainer);
     this.viewport.addChild(this.containers.bestSurvivorCointainer);
@@ -174,6 +187,13 @@ class World {
     this.initPredators(this.totalPredators);
     this.initSurvivors(this.totalSurvivors);
     this.loadFood(this.totalFood);
+    this.loadPowerups(this.totalPowerups);
+
+    let socketData = {
+      worldInfo : { key : "anito"}
+    };
+
+    socket.emit('world.init', socketData);
   }
 
   showScene() {
@@ -213,11 +233,45 @@ class World {
 
       let obj = SpriteFactory.create("FoodSprite", opt);
       this.foodInfo.push(obj.getSprite());
+      socket.emit('food.init', obj.getBasicData());
       this.foodContainer.addChild(obj.getSprite());
 
     }
 
   }
+
+   /**
+   * Generate powerUps objects (both PIXI sprites and Food attributes)
+   * @param {*} numSprites config.world.food  
+   */
+  loadPowerups(numSprites) {
+
+    if (this.powerupInfo.length >= config.world.maxPowerups)
+      return;
+
+    for (var i = 0; i < numSprites; i++) {
+
+      let opt = {
+        i: i,
+        //screenWidth: app.screen.width,
+        //screenHeight: app.screen.height
+        screenWidth: config.app.width,//app.screen.width,
+        screenHeight: config.app.height//app.screen.height,
+      }
+
+
+      let obj = SpriteFactory.create("PowerupSprite", opt);
+      //sometimes, powerups are not enabled
+      if (obj.getSprite().isEnabled) {      
+        this.powerupInfo.push(obj.getSprite());
+        this.powerupContainer.addChild(obj.getSprite());
+      }
+
+    }
+
+  }
+
+  
 
   /**
    * Check deads, food status, predators and environment
@@ -227,7 +281,7 @@ class World {
     for (var i = 0; i < this.survivorsInfo.length; i++) {
       if (this.survivorsInfo[i]) {
         if (this.survivorsInfo[i].isDead) {
-          console.log("survivor #" + this.survivorsInfo[i].uid + " is dead (Starving)");
+          logger.log("world.js", "survivor #" + this.survivorsInfo[i].uid + " is dead (Starving)");
           this.killSurvivor(this.survivorsInfo[i]);
         } else {
           this.survivorsInfo[i].consumeEnergy();
@@ -271,7 +325,7 @@ class World {
       }
 
       let p = CreatureFactory.create("Predator", opt);
-      console.log(p.collectStats());
+      logger.log("world.js", p.collectStats());
 
       // finally we push the sprite into the survivors array so it it can be easily accessed later
       this.predatorsInfo.push(p);
@@ -350,7 +404,7 @@ class World {
             screenHeight: app.screen.height,
             i: this.survivorsInfo.length,
             isHumanControlled : population[i].isHumanControlled,
-            isCurrentlyControlledByHuman : false
+            isCurrentlyControlledByHuman : population[i].isCurrentlyControlledByHuman
           })
           .getSprite()
       }
@@ -522,6 +576,23 @@ class World {
     }
   }
 
+    /**
+   * Process food sprites and events
+   */
+  processPowerup() {
+    //iterate trough the predator and move & find survivors
+    for (var i = 0; i < this.powerupInfo.length; i++) {
+
+      this.powerupInfo[i].direction += this.powerupInfo[i].turningSpeed * 0.01;
+      //check for border colission and change direction
+      this.powerupInfo[i].direction = this.powerupInfo[i].handleBorderCollition();
+      this.powerupInfo[i].x += Math.sin(this.powerupInfo[i].direction) * (this.powerupInfo[i].speed * this.powerupInfo[i].scale.y);
+      this.powerupInfo[i].y += Math.cos(this.powerupInfo[i].direction) * (this.powerupInfo[i].speed * this.powerupInfo[i].scale.y);
+      this.powerupInfo[i].rotation = -this.powerupInfo[i].direction + Math.PI;
+
+    }
+  }
+
   /**
    * Process Predator logic and events
    */
@@ -542,7 +613,7 @@ class World {
           let survivor = this.survivorsInfo.find(o => o.uid == dude.uid);
           //survivor.isDead = true;
           this.killSurvivor(survivor);
-          console.log("survivor #" + dude.uid + " is dead (eaten)");
+          logger.log("world.js - processPredator()", "survivor #" + dude.uid + " is dead (eaten)");
 
           //TODO: FIX this, this.survivorsInfo is not discounting
           this.predatorsInfo[i].eat();
@@ -568,6 +639,38 @@ class World {
         this.survivorsInfo[i].getCurrentStatus();
         this.survivorsInfo[i].checkIfCopuling();
 
+
+        //TODO: Add survivor logic to evaluate if is better get the powerup or eat
+        // based on some parameter (i/e braveness or intelligence)
+        /***
+         * OPTIONAL: Find PowerUps
+         */
+
+        if (!this.survivorsInfo[i].reproductionStatus.isCopuling) {
+          let nearPowerupsArray = this.survivorsInfo[i].findPowerup(this.powerupInfo);
+
+          if (nearPowerupsArray.length > 0) {
+            let survivorEatingPowerup = this.b.hit(
+              this.survivorsInfo[i].sprite, nearPowerupsArray, false, false, false,
+              function(collision, powerup) {
+                if (collision != undefined) {  
+                  if (!powerup.eated) {
+                    powerup.eated = true;
+                    this.powerupContainer.removeChild(powerup);
+                    //this.foodInfo.splice(food.idx, 1);
+                    this.powerupInfo = this.powerupInfo.filter(o => o.uid !== powerup.uid);
+                    this.survivorsInfo[i].eatPowerup(powerup);
+                    logger.log("world.js - processSurvivor()", "survivor #" + this.survivorsInfo[i].idx + " - GOT POWERUP of TYPE: " + powerup.powerUpType);
+                  }
+              }
+              }.bind(this)
+            );
+          }
+
+        }
+
+
+
         /**** 
          * FIRST PRIORITY : Find Food and survive
          */
@@ -585,6 +688,7 @@ class World {
                     this.foodContainer.removeChild(food);
                     //this.foodInfo.splice(food.idx, 1);
                     this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
+                    socket.emit('food.remove', food.uid);
                     this.survivorsInfo[i].eat(food);
                     //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
                   }
@@ -622,7 +726,7 @@ class World {
               this.childInfo.push(son);
               this.createNewSurvivors(this.childInfo);
             } else {
-              console.log(this.survivorsInfo[i].getCurrentMate() + " no encontrado");
+              logger.log("world.js - processSurvivor()", this.survivorsInfo[i].getCurrentMate() + " no encontrado");
             }
 
             //stop copuling / reset all
@@ -643,7 +747,7 @@ class World {
 
           //check if they can reproduce
           if (cr && cr.canReproduce == true) {
-            console.log("PUEDE CULIAR " + cr.partnerUid);
+            logger.log("world.js - processSurvivor()", "PUEDE CULIAR " + cr.partnerUid);
             //let partner = this.survivorsInfo.find(o=>o.uid == cr.partnerUid);
             //partner = true;
             let idx = this.survivorsInfo.map(o => o.uid)
@@ -767,7 +871,7 @@ class World {
     for (let i= 0; i<this.bestSurvivorInfo.length; i++) {
       let rem = this.bestSurvivorCointainer.removeChild(this.bestSurvivorInfo[i]);
       if (rem)
-        console.log("Removed : " + rem.uid);
+        logger.log("world.js - showBestSurvivor", "Child Removed : " + rem.uid);
     }
     
     
@@ -788,6 +892,7 @@ class World {
       PIXI: PIXI,
       dna: population[0],
       isHumanControlled: true,
+      isCurrentlyControlledByHuman: true,
       i: this.survivorsInfo.length,
       //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
       sprite: SpriteFactory.create("SurvivorSprite", {
@@ -817,15 +922,15 @@ class World {
 
 
   //Ambas funciones para poder intercambiar survivors controlados
-  /*
-  getHumanControlledSurvivorUid() {
+  
+  getHumanControlledSurvivor() {
     for (var i = 0; i < this.survivorsInfo.length; i++) {
       if(this.survivorsInfo[i].isCurrentlyControlledByHuman)
-        return this.survivorsInfo[i].uid;
+        return this.survivorsInfo[i];
     }
   }
 
-  */
+  
 
   /*
   swapHumanControlledSurvivor(uid) {
@@ -853,7 +958,6 @@ class World {
 
       if (this.mousePointerContainer.children.length > 0) {
         let cursor = this.mousePointerContainer.getChildAt(0);
-        console.log(cursor);
         if (cursor != undefined) {
           cursor.x = point.x;
           cursor.y = point.y;

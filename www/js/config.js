@@ -13,9 +13,13 @@ var config = {
     food: 300,
     predators: 3,
     survivors: 30,
+    powerups: 5,
     maxFoodGenerationRatio: 150,
+    maxPowerupGenerationRatio: 10,
     foodRegenerationThreshold: 0.15, // % of max food to regenerate food
+    powerupRegenerationThreshold: 0.3,
     maxFood: 500,
+    maxPowerups: 10,
     maxSurvivors: 100,
     maxSurvivorsGenerationRatio : 30,
     survivorsRegenerationThreshold : 0.30,
@@ -37,7 +41,8 @@ var config = {
     livingTimeLimit: 60,
     minVisionRange: 50,
     maxVisionRange: 200,
-    maxEnergy: 10
+    maxEnergy: 10,
+    maxSpeed: 1.5
   },
-  debugMode: false
+  debugMode: true
 }

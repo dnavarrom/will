@@ -170,6 +170,21 @@ class Creature {
     this.sprite.idx = idx;
   }
 
+  incrementSpeed(units) {
+    if (units > 0.5) {
+      console.log("Supera limite de incremento de velocidad, se ajusta incremento a 0.5");
+      units = 0.5;
+    }
+
+    if (this.speed+units > config.creature.maxSpeed) {
+      this.speed = config.creature.maxSpeed;
+      this.sprite.speed = config.creature.maxSpeed;
+    } else {
+      this.speed += units;
+      this.sprite.speed +=units;
+    }
+  }
+
   /**
    * Apply Force (angle + direction + speed)
    */

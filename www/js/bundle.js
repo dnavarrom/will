@@ -2310,8 +2310,29 @@ class Helpers {
 
   }
 
+  round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+  }
+
 }
 
+/* eslint-disable */
+
+  
+  class Logger {
+    constructor() {
+  
+      this.debug = config.debugMode;
+      console.log("Debug mode enabled by config");
+    }
+
+  
+    log(src, message, opt) {
+      let msg = "[" + src + "]" + JSON.stringify(message);
+        console.log(msg);
+    }
+  }
+  
 class DeviceRotation {
   constructor(app) {
 
@@ -2440,6 +2461,121 @@ class InGameInformation {
   }
 }
 
+class PlayerInformation {
+
+    constructor(app) {
+
+
+        //Box
+
+        this.graphics = new PIXI.Graphics();
+        this.graphics.lineStyle(2, Constants.colors.LIGHTBLUE, 0.6);
+        this.graphics.beginFill(Constants.colors.BLUEYALE, 0.15);
+        this.graphics.drawRoundedRect(50, 50, 150, 90, 16);
+        this.graphics.endFill();
+     
+
+  
+      //UI Information
+      this.uiTextInfo = new PIXI.Text("-- Player Status -- \n Score: 0 \n Age: 0 \n Childrens: 0", {
+        fontWeight: 'normal',
+        //fontStyle: 'italic',
+        fontSize: 15,
+        //fontFamily: 'Arvo',
+        fill: '#FFFFFF',
+        align: 'center',
+        //stroke: '#a4410e',
+        strokeThickness: 2
+      });
+  
+      this.currentDisplay = {
+        speed: -1,
+        visionRange: -1,
+        maxEnergy : -1,
+        energy: -1,
+        score : -1,
+        childrens: -1,
+        age : -1
+      };
+  
+      //this.uiTextInfo.x = app.screen.width / 2;
+      //this.uiTextInfo.y = app.screen.height - 30;
+      this.setPosition(app.screen.width, app.screen.height);
+      this.uiTextInfo.anchor.x = 0.5;
+      this.hideScene();
+  
+      this.containers = {
+        uiTextInfo: this.uiTextInfo
+      }
+  
+      app.stage.addChild(this.uiTextInfo);
+      app.stage.addChild(this.graphics);
+  
+    }
+  
+    showScene() {
+      /*
+      for (var key in this.containers) {
+        if (this.containers.hasOwnProperty(key)) {
+          this.containers[key].visible = true;
+        }
+      }
+      */
+      this.uiTextInfo.visible = true;
+      this.graphics.visible = true;
+    }
+  
+    hideScene() {
+      /*
+      for (var key in this.containers) {
+        if (this.containers.hasOwnProperty(key)) {
+          this.containers[key].visible = false;
+        }
+      }
+      */
+  
+      this.uiTextInfo.visible = false;
+      this.graphics.visible = false;
+    }
+
+    isVisible() {
+        return this.uiTextInfo.visible;
+    }
+  
+    updateUi(data) {
+  
+
+        if (this.currentDisplay.score != data.numBugEated || this.currentDisplay.energy != data.energy) {
+
+
+        this.currentDisplay.speed = data.speed;
+        this.currentDisplay.maxEnergy = data.maxEnergy;
+        this.currentDisplay.energy = data.energy;
+        this.currentDisplay.score = data.numBugEated;
+        this.currentDisplay.childrens = data.childrens.length;
+        this.currentDisplay.age = data.livingTime;
+
+        this.uiTextInfo.text = "-- Player Status -- \n Score: " + this.currentDisplay.score + " \n" +
+                               "Age: " + helper.round(this.currentDisplay.age,2) + " \n " +
+                               "Childrens: " + this.currentDisplay.childrens + " \n" + 
+                               "Speed: " + this.currentDisplay.speed;
+
+        }
+
+
+    }
+  
+    setPosition(width, height) {
+  
+      this.uiTextInfo.x = width - width + 175;
+      this.uiTextInfo.y = (height / 2) - 25;
+
+      this.graphics.x = width - width + 50;
+      this.graphics.y = height / 2 - 80 ;
+  
+    }
+  }
+  
 class Splash {
   constructor(app) {
 
@@ -2710,6 +2846,7 @@ class World {
     this.childInfo = [];
     this.predatorsInfo = [];
     this.foodInfo = [];
+    this.powerupInfo = [];
     this.targetMateLineInfo = [];
     this.debugInfo = [];
     this.creatureHudInfo = [];
@@ -2723,6 +2860,7 @@ class World {
     this.totalSurvivors = config.world.survivors;
     this.totalPredators = config.world.predators;
     this.totalFood = config.world.food;
+    this.totalPowerups = config.world.powerups;
 
     //collect status
     this.deadSurvivors = [];
@@ -2741,7 +2879,7 @@ class World {
     }
     else
     {
-      this.survivorsContainer = new PIXI.ParticleContainer(10000, {
+      this.survivorsContainer = new PIXI.ParticleContainer(2000, {
         scale: true,
         position: true,
         rotation: true,
@@ -2763,6 +2901,14 @@ class World {
     //app.stage.addChild(this.predatorsContainer);
 
     this.foodContainer = new PIXI.particles.ParticleContainer(1000, {
+      scale: true,
+      position: true,
+      rotation: true,
+      uvs: true,
+      alpha: true
+    });
+
+    this.powerupContainer = new PIXI.particles.ParticleContainer(1000, {
       scale: true,
       position: true,
       rotation: true,
@@ -2823,6 +2969,7 @@ class World {
       predatorsContainer: this.predatorsContainer,
       survivorsContainer: this.survivorsContainer,
       foodContainer: this.foodContainer,
+      powerupContainer : this.powerupContainer,
       debugContainer: this.debugContainer,
       creatureHudContainer: this.creatureHudContainer,
       targetMateLineContainer: this.targetMateLineContainer,
@@ -2835,6 +2982,7 @@ class World {
       childInfo: this.childInfo,
       predatorsInfo: this.predatorsInfo,
       foodInfo: this.foodInfo,
+      powerupInfo: this.powerupInfo,
       debugInfo: this.debugInfo,
       creatureHudInfo: this.creatureHudInfo,
       targetMateLineInfo: this.targetMateLineInfo,
@@ -2854,6 +3002,7 @@ class World {
 
     this.viewport.addChild(this.containers.survivorsContainer);
     this.viewport.addChild(this.containers.foodContainer);
+    this.viewport.addChild(this.containers.powerupContainer);
     this.viewport.addChild(this.containers.predatorsContainer);
     this.viewport.addChild(this.containers.creatureHudContainer);
     this.viewport.addChild(this.containers.bestSurvivorCointainer);
@@ -2874,6 +3023,13 @@ class World {
     this.initPredators(this.totalPredators);
     this.initSurvivors(this.totalSurvivors);
     this.loadFood(this.totalFood);
+    this.loadPowerups(this.totalPowerups);
+
+    let socketData = {
+      worldInfo : { key : "anito"}
+    };
+
+    socket.emit('world.init', socketData);
   }
 
   showScene() {
@@ -2913,11 +3069,45 @@ class World {
 
       let obj = SpriteFactory.create("FoodSprite", opt);
       this.foodInfo.push(obj.getSprite());
+      socket.emit('food.init', obj.getBasicData());
       this.foodContainer.addChild(obj.getSprite());
 
     }
 
   }
+
+   /**
+   * Generate powerUps objects (both PIXI sprites and Food attributes)
+   * @param {*} numSprites config.world.food  
+   */
+  loadPowerups(numSprites) {
+
+    if (this.powerupInfo.length >= config.world.maxPowerups)
+      return;
+
+    for (var i = 0; i < numSprites; i++) {
+
+      let opt = {
+        i: i,
+        //screenWidth: app.screen.width,
+        //screenHeight: app.screen.height
+        screenWidth: config.app.width,//app.screen.width,
+        screenHeight: config.app.height//app.screen.height,
+      }
+
+
+      let obj = SpriteFactory.create("PowerupSprite", opt);
+      //sometimes, powerups are not enabled
+      if (obj.getSprite().isEnabled) {      
+        this.powerupInfo.push(obj.getSprite());
+        this.powerupContainer.addChild(obj.getSprite());
+      }
+
+    }
+
+  }
+
+  
 
   /**
    * Check deads, food status, predators and environment
@@ -2927,7 +3117,7 @@ class World {
     for (var i = 0; i < this.survivorsInfo.length; i++) {
       if (this.survivorsInfo[i]) {
         if (this.survivorsInfo[i].isDead) {
-          console.log("survivor #" + this.survivorsInfo[i].uid + " is dead (Starving)");
+          logger.log("world.js", "survivor #" + this.survivorsInfo[i].uid + " is dead (Starving)");
           this.killSurvivor(this.survivorsInfo[i]);
         } else {
           this.survivorsInfo[i].consumeEnergy();
@@ -2971,7 +3161,7 @@ class World {
       }
 
       let p = CreatureFactory.create("Predator", opt);
-      console.log(p.collectStats());
+      logger.log("world.js", p.collectStats());
 
       // finally we push the sprite into the survivors array so it it can be easily accessed later
       this.predatorsInfo.push(p);
@@ -3050,7 +3240,7 @@ class World {
             screenHeight: app.screen.height,
             i: this.survivorsInfo.length,
             isHumanControlled : population[i].isHumanControlled,
-            isCurrentlyControlledByHuman : false
+            isCurrentlyControlledByHuman : population[i].isCurrentlyControlledByHuman
           })
           .getSprite()
       }
@@ -3222,6 +3412,23 @@ class World {
     }
   }
 
+    /**
+   * Process food sprites and events
+   */
+  processPowerup() {
+    //iterate trough the predator and move & find survivors
+    for (var i = 0; i < this.powerupInfo.length; i++) {
+
+      this.powerupInfo[i].direction += this.powerupInfo[i].turningSpeed * 0.01;
+      //check for border colission and change direction
+      this.powerupInfo[i].direction = this.powerupInfo[i].handleBorderCollition();
+      this.powerupInfo[i].x += Math.sin(this.powerupInfo[i].direction) * (this.powerupInfo[i].speed * this.powerupInfo[i].scale.y);
+      this.powerupInfo[i].y += Math.cos(this.powerupInfo[i].direction) * (this.powerupInfo[i].speed * this.powerupInfo[i].scale.y);
+      this.powerupInfo[i].rotation = -this.powerupInfo[i].direction + Math.PI;
+
+    }
+  }
+
   /**
    * Process Predator logic and events
    */
@@ -3242,7 +3449,7 @@ class World {
           let survivor = this.survivorsInfo.find(o => o.uid == dude.uid);
           //survivor.isDead = true;
           this.killSurvivor(survivor);
-          console.log("survivor #" + dude.uid + " is dead (eaten)");
+          logger.log("world.js - processPredator()", "survivor #" + dude.uid + " is dead (eaten)");
 
           //TODO: FIX this, this.survivorsInfo is not discounting
           this.predatorsInfo[i].eat();
@@ -3268,6 +3475,38 @@ class World {
         this.survivorsInfo[i].getCurrentStatus();
         this.survivorsInfo[i].checkIfCopuling();
 
+
+        //TODO: Add survivor logic to evaluate if is better get the powerup or eat
+        // based on some parameter (i/e braveness or intelligence)
+        /***
+         * OPTIONAL: Find PowerUps
+         */
+
+        if (!this.survivorsInfo[i].reproductionStatus.isCopuling) {
+          let nearPowerupsArray = this.survivorsInfo[i].findPowerup(this.powerupInfo);
+
+          if (nearPowerupsArray.length > 0) {
+            let survivorEatingPowerup = this.b.hit(
+              this.survivorsInfo[i].sprite, nearPowerupsArray, false, false, false,
+              function(collision, powerup) {
+                if (collision != undefined) {  
+                  if (!powerup.eated) {
+                    powerup.eated = true;
+                    this.powerupContainer.removeChild(powerup);
+                    //this.foodInfo.splice(food.idx, 1);
+                    this.powerupInfo = this.powerupInfo.filter(o => o.uid !== powerup.uid);
+                    this.survivorsInfo[i].eatPowerup(powerup);
+                    logger.log("world.js - processSurvivor()", "survivor #" + this.survivorsInfo[i].idx + " - GOT POWERUP of TYPE: " + powerup.powerUpType);
+                  }
+              }
+              }.bind(this)
+            );
+          }
+
+        }
+
+
+
         /**** 
          * FIRST PRIORITY : Find Food and survive
          */
@@ -3285,6 +3524,7 @@ class World {
                     this.foodContainer.removeChild(food);
                     //this.foodInfo.splice(food.idx, 1);
                     this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
+                    socket.emit('food.remove', food.uid);
                     this.survivorsInfo[i].eat(food);
                     //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
                   }
@@ -3322,7 +3562,7 @@ class World {
               this.childInfo.push(son);
               this.createNewSurvivors(this.childInfo);
             } else {
-              console.log(this.survivorsInfo[i].getCurrentMate() + " no encontrado");
+              logger.log("world.js - processSurvivor()", this.survivorsInfo[i].getCurrentMate() + " no encontrado");
             }
 
             //stop copuling / reset all
@@ -3343,7 +3583,7 @@ class World {
 
           //check if they can reproduce
           if (cr && cr.canReproduce == true) {
-            console.log("PUEDE CULIAR " + cr.partnerUid);
+            logger.log("world.js - processSurvivor()", "PUEDE CULIAR " + cr.partnerUid);
             //let partner = this.survivorsInfo.find(o=>o.uid == cr.partnerUid);
             //partner = true;
             let idx = this.survivorsInfo.map(o => o.uid)
@@ -3467,7 +3707,7 @@ class World {
     for (let i= 0; i<this.bestSurvivorInfo.length; i++) {
       let rem = this.bestSurvivorCointainer.removeChild(this.bestSurvivorInfo[i]);
       if (rem)
-        console.log("Removed : " + rem.uid);
+        logger.log("world.js - showBestSurvivor", "Child Removed : " + rem.uid);
     }
     
     
@@ -3488,6 +3728,7 @@ class World {
       PIXI: PIXI,
       dna: population[0],
       isHumanControlled: true,
+      isCurrentlyControlledByHuman: true,
       i: this.survivorsInfo.length,
       //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
       sprite: SpriteFactory.create("SurvivorSprite", {
@@ -3517,15 +3758,15 @@ class World {
 
 
   //Ambas funciones para poder intercambiar survivors controlados
-  /*
-  getHumanControlledSurvivorUid() {
+  
+  getHumanControlledSurvivor() {
     for (var i = 0; i < this.survivorsInfo.length; i++) {
       if(this.survivorsInfo[i].isCurrentlyControlledByHuman)
-        return this.survivorsInfo[i].uid;
+        return this.survivorsInfo[i];
     }
   }
 
-  */
+  
 
   /*
   swapHumanControlledSurvivor(uid) {
@@ -3553,7 +3794,6 @@ class World {
 
       if (this.mousePointerContainer.children.length > 0) {
         let cursor = this.mousePointerContainer.getChildAt(0);
-        console.log(cursor);
         if (cursor != undefined) {
           cursor.x = point.x;
           cursor.y = point.y;
@@ -3784,9 +4024,13 @@ var config = {
     food: 300,
     predators: 3,
     survivors: 30,
+    powerups: 5,
     maxFoodGenerationRatio: 150,
+    maxPowerupGenerationRatio: 10,
     foodRegenerationThreshold: 0.15, // % of max food to regenerate food
+    powerupRegenerationThreshold: 0.3,
     maxFood: 500,
+    maxPowerups: 10,
     maxSurvivors: 100,
     maxSurvivorsGenerationRatio : 30,
     survivorsRegenerationThreshold : 0.30,
@@ -3808,9 +4052,10 @@ var config = {
     livingTimeLimit: 60,
     minVisionRange: 50,
     maxVisionRange: 200,
-    maxEnergy: 10
+    maxEnergy: 10,
+    maxSpeed: 1.5
   },
-  debugMode: false
+  debugMode: true
 }
 
 const Constants = {
@@ -3829,6 +4074,11 @@ const Constants = {
       MEDIUM : "MEDIUM",
       LARGE : "LARGE"
     },
+    powerUpTypes : {
+      SPEED: "SPEED",
+      ENERGY: "ENERGY",
+      TELEPORT: "TELEPORT"
+    },
     selectionTypes : {
       CIRCLE : "CIRCLE",
       RECTANGLE : "RECTANGLE",
@@ -3838,6 +4088,7 @@ const Constants = {
       RED: 0xf91800,
       BLUE: 0x000ff,
       BLUEYALE: 0x0E4D92,
+      LIGHTBLUE: 0xADD8E6,
       GREY: 0xb6b6ba,
       DARKGREY: 0x313335,
       LIGHTGREY: 0xD3D3D3,
@@ -3845,7 +4096,8 @@ const Constants = {
       GREEN: 0x00FF00,
       ORANGE: 0xFC6600,
       BLACK : 0X000000,
-      YELLOW : 0XFFFF00	
+      YELLOW : 0XFFFF00,
+      PURPLE: 0x663399
     },
     simulationStates: {
       RUN: "run",
@@ -4021,8 +4273,156 @@ class FoodSprite extends CustomSprite {
     return foodBounds;
   }
 
+  getBasicData() {
+    return {
+      uid : this.uid,
+      x : this.x,
+      y : this.y,
+      speed : this.sprite.speed,
+      direction: this.direction,
+      turningSpeed : this.turningSpeed
+    }
+  }
+
 }
 
+class PowerupSprite extends CustomSprite {
+
+    constructor(opt) {
+      super(opt);
+      this.appScreenWidth;
+      this.appScreenHeight;
+      this.init(opt.screenWidth, opt.screenHeight, opt.i);
+    }
+  
+    init(screenWidth, screenHeight, i) {
+
+      //this.powerupEnergy = new PIXI.Sprite(PIXI.loader.resources["img/sprites/powerup/blue/frame1.png"].texture);
+  
+      let graphics = new PIXI.Graphics;
+      
+      let rnd = Math.random();
+
+      if (rnd < 0.7) {
+          // 0-70% Chance -- no entrego nada
+          this.powerUpType = undefined;
+
+      } else if (rnd < 0.8) {
+          //1 - (70 to 80)% chance
+          this.powerUpType = Constants.powerUpTypes.ENERGY;
+
+      } else if (rnd < 0.95){
+          //1 - (80 to 95)% chance
+          this.powerUpType = Constants.powerUpTypes.SPEED;
+      } else {
+          //1- (95 to 100)%
+          this.powerUpType = Constants.powerUpTypes.TELEPORT
+      }
+
+
+  
+      if (this.powerUpType == undefined) {
+        //By default, powerUps are disabled
+        this.isEnabled = false;
+        this.sprite = {
+          isEnabled : false
+        }
+        return;
+        }
+
+
+      switch(this.powerUpType) {
+        case Constants.powerUpTypes.ENERGY:
+            graphics.beginFill(Constants.colors.GREEN);
+            graphics.drawRect(10, 10, 5, 5);
+            break;
+  
+        case Constants.powerUpTypes.SPEED:
+          graphics.beginFill(Constants.colors.ORANGE);
+          graphics.drawRect(10, 10, 5, 5);
+            break;
+  
+        case Constants.powerUpTypes.TELEPORT:
+          graphics.beginFill(Constants.colors.BLUE);
+          graphics.drawRect(10, 10, 5, 5);
+          break;
+  
+        default:
+          graphics.beginFill(Constants.colors.BLACK);
+          graphics.drawRect(10, 10, 5, 5);
+          break;
+      }
+  
+      graphics.endFill();
+      let texture = new PIXI.Texture(app.renderer.generateTexture(graphics));
+      this.sprite = new PIXI.Sprite(texture);
+      //this.sprite = new PIXI.Sprite.fromImage('/img/star.png', true),
+      //this.sprite = new PIXI.Sprite(PIXI.loader.resources["img/star.png"].texture)
+      this.appScreenWidth = screenWidth;
+      this.appScreenHeight = screenHeight;
+      //this.idx = i;
+      //this.sprite.idx = i;
+      this.uid = helper.generateGuid();
+      this.sprite.uid = this.uid;
+      this.sprite.powerUpType = this.powerUpType;
+
+      this.isEnabled = true;
+      this.sprite.isEnabled = true;
+
+      this.eated = false;
+      this.sprite.eated = false;
+    
+      this.setParameters();
+      super.setBehavior();
+
+
+    };
+
+    setIndex(idx) {
+      this.idx = idx;
+      this.sprite.idx = idx;
+    }
+  
+    setParameters() {
+  
+      // set the anchor point so the texture is centerd on the sprite
+      this.sprite.anchor.set(0.5);
+      // scale png file
+      //this.sprite.scale.set(0.05);
+      this.sprite.scale.set(1);
+  
+      //TODO : change this for config.app.worldsize
+      this.sprite.x = Math.random() * (this.appScreenWidth - 50);
+      this.sprite.y = Math.random() * (this.appScreenHeight - 50);
+  
+      // create a random direction in radians
+      this.sprite.direction = Math.random() * Math.PI * 2;
+      this.sprite.turningSpeed = Math.random() - 0.8;
+      //this.sprite.speed = (10 + Math.random() * 15) * 0.2;
+      this.sprite.speed = (10 + Math.random() * 15) * 0.02;
+  
+      this.sprite.foodBounds = this.getBounds();
+  
+      this.sprite.offset = Math.random() * 100;
+      this.sprite.appScreenWidth = this.appScreenWidth;
+      this.sprite.appScreenHeight = this.appScreenHeight;
+    }
+  
+    getBounds() {
+  
+      let foodBoundsPadding = 200;
+      let foodBounds = new PIXI.Rectangle(
+        -foodBoundsPadding,
+        -foodBoundsPadding,
+        (this.appScreenWidth) + foodBoundsPadding * 2,
+        (this.appScreenHeight) + foodBoundsPadding * 2
+      );
+  
+      return foodBounds;
+    }
+  
+  }
+  
 class EnergyBarSprite extends PIXI.Text {
   constructor(opt) {
     super("E: 100%", {
@@ -4688,6 +5088,21 @@ class Creature {
     this.sprite.idx = idx;
   }
 
+  incrementSpeed(units) {
+    if (units > 0.5) {
+      console.log("Supera limite de incremento de velocidad, se ajusta incremento a 0.5");
+      units = 0.5;
+    }
+
+    if (this.speed+units > config.creature.maxSpeed) {
+      this.speed = config.creature.maxSpeed;
+      this.sprite.speed = config.creature.maxSpeed;
+    } else {
+      this.speed += units;
+      this.sprite.speed +=units;
+    }
+  }
+
   /**
    * Apply Force (angle + direction + speed)
    */
@@ -4880,6 +5295,75 @@ class Survivor extends Creature {
     return nearFoodArray;
 
   }
+
+
+  
+  /**
+   * Find nearest powerup to pursue
+   * @param {Array} powerupInfo 
+   */
+  findPowerup(powerupInfo) {
+
+    //checkear la comida mas cercana
+    let nearPowerupArray = [];
+
+    /*
+    if (this.isHumanControlled)
+      return nearFoodArray;
+    */
+
+    //var nearestPowerupIdx;
+    var nearestPowerupDistance = 1000;
+    var angle;
+    var powerupfound = 0;
+
+    
+
+    for (var j = 0; j < powerupInfo.length; j++) {
+
+      let dist = helper.CheckDistanceBetweenSprites(this.sprite, powerupInfo[j]);
+
+      if (nearestPowerupDistance > dist.distance) {
+
+        if (dist.distance < this.visionRange && !powerupInfo[j].eated) {
+          //console.log("comida cercana " + dude.nearestFoodDistance + " - distancia : " + dist.distance + " - angle : " +dist.angle + " - dudeDirection : " + dude.direction);
+
+          nearestPowerupDistance = dist.distance;
+          //nearestPowerupIdx = j;
+          angle = dist.angle;
+          powerupfound++;
+
+          nearPowerupArray.push(powerupInfo[j]);
+
+          //TODO: Revisar ya que no tiene sentido (originalmente era poblar un array de 3 powerups, solo necesito 1)
+          if (nearPowerupArray.length > 0)
+            break;
+        }
+      }
+    }
+
+    //asignar target al worm
+
+    if (powerupfound == 0) {
+      //sprite.tint = 0xFF0000;
+      //dude.direction = Math.random() * Math.PI * 2;
+      this.isBlind = true;
+    } else {
+      //asigno target normalmente
+      this.nearestPowerupDistance = nearestPowerupDistance;
+      //this.nearestPowerupIdx = nearestPowerupIdx;
+      this.setDirection(angle);
+      this.isBlind = false;
+
+    }
+
+    //console.log("FIND FOOD RESULT : " + this.nearestFoodDistance);
+
+    return nearPowerupArray;
+
+  }
+
+
 
   getCurrentStatus() {
 
@@ -5262,6 +5746,34 @@ class Survivor extends Creature {
       }
     
   }
+
+  /**
+   * When eat, add energy
+   */
+  eatPowerup(powerup) {
+    
+    if (powerup) {
+    
+      logger.log("survivor.js", "GOT POWERUP : " + powerup.powerUpType);
+
+      switch (powerup.powerUpType) {
+        case Constants.powerUpTypes.ENERGY:
+            this.energy = config.creature.maxEnergy;
+            break;
+        case Constants.powerUpTypes.SPEED:
+          this.incrementSpeed(Math.random());
+          break;
+      case Constants.powerUpTypes.TELEPORT:
+          this.setPosition(helper.generateRandomInteger(100, config.app.width),helper.generateRandomInteger(100, config.app.height));
+          break;
+      default:
+          break;
+      }
+      this.nearestPowerupDistance = 10000;
+        
+      }
+    
+    }
 }
 
 class StateManager {
@@ -5283,6 +5795,7 @@ class StateManager {
           this.scenes.splash.hideScene();
           this.scenes.rotation.hideScene();
           this.scenes.inGameInformation.hideScene();
+          this.scenes.playerInformation.hideScene();
           this.scenes.uiControls.hideScene();
           break;
 
@@ -5299,6 +5812,7 @@ class StateManager {
           this.scenes.splash.hideScene();
           this.scenes.rotation.showScene();
           this.scenes.inGameInformation.hideScene();
+          this.scenes.playerInformation.hideScene();
           this.scenes.uiControls.hideScene();
           break;
 
@@ -5307,8 +5821,10 @@ class StateManager {
           this.scenes.splash.showScene();
           this.scenes.rotation.hideScene();
           this.scenes.inGameInformation.hideScene();
+          this.scenes.playerInformation.hideScene();
           this.scenes.uiControls.hideScene();
           break;
+
       }
 
     }
