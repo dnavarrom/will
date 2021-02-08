@@ -20,6 +20,22 @@ class World {
 
     this.b = b; //bump
 
+    //Textures
+    this.survivorTexture = loader.resources["img/trail.png"].texture
+    this.predatorTexture = loader.resources["img/predator.png"].texture
+
+    let graphics = new PIXI.Graphics;
+    graphics.beginFill(Constants.colors.LIGHTGREY);
+
+    this.foodTextures = {
+      small : app.renderer.generateTexture(graphics.drawCircle(10, 10, 2)),
+      medium : app.renderer.generateTexture(graphics.drawCircle(10, 10, 3)),
+      large : app.renderer.generateTexture(graphics.drawCircle(10, 10, 4))
+    };
+    graphics.endFill();
+
+    // END TEXTURES
+
     //var totalSurvivors = app.renderer instanceof PIXI.WebGLRenderer ? 10000 : 100;
     this.totalSurvivors = config.world.survivors;
     this.totalPredators = config.world.predators;
@@ -193,7 +209,7 @@ class World {
       worldInfo : { key : "anito"}
     };
 
-    socket.emit('world.init', socketData);
+    //socket.emit('world.init', socketData);
   }
 
   showScene() {
@@ -225,6 +241,7 @@ class World {
 
       let opt = {
         i: i,
+        foodTextures : this.foodTextures,
         //screenWidth: app.screen.width,
         //screenHeight: app.screen.height
         screenWidth: config.app.width,//app.screen.width,
@@ -233,7 +250,7 @@ class World {
 
       let obj = SpriteFactory.create("FoodSprite", opt);
       this.foodInfo.push(obj.getSprite());
-      socket.emit('food.init', obj.getBasicData());
+      //socket.emit('food.init', obj.getBasicData());
       this.foodContainer.addChild(obj.getSprite());
 
     }
@@ -252,7 +269,6 @@ class World {
     for (var i = 0; i < numSprites; i++) {
 
       let opt = {
-        i: i,
         //screenWidth: app.screen.width,
         //screenHeight: app.screen.height
         screenWidth: config.app.width,//app.screen.width,
@@ -262,7 +278,7 @@ class World {
 
       let obj = SpriteFactory.create("PowerupSprite", opt);
       //sometimes, powerups are not enabled
-      if (obj.getSprite().isEnabled) {      
+      if (obj.isEnabled) {      
         this.powerupInfo.push(obj.getSprite());
         this.powerupContainer.addChild(obj.getSprite());
       }
@@ -272,6 +288,19 @@ class World {
   }
 
   
+  swapControlToChildren(survivor) {
+    
+    for (let i =0; i< survivor.childrens.length; i++) {
+
+      let children = this.survivorsInfo.find(o=> o.uid == survivor.childrens[i]);
+      if (children !== undefined && children.isDead == false && children.isHumanControlled) {
+        children.isCurrentlyControlledByHuman = true;
+        this.humanControledUid = children.uid;
+        this.viewport.follow(children.sprite, null);
+        logger.log("world.js - swapControlToChildren", "Control pasado a hijo");
+      };
+    }
+  }
 
   /**
    * Check deads, food status, predators and environment
@@ -281,12 +310,19 @@ class World {
     for (var i = 0; i < this.survivorsInfo.length; i++) {
       if (this.survivorsInfo[i]) {
         if (this.survivorsInfo[i].isDead) {
-          logger.log("world.js", "survivor #" + this.survivorsInfo[i].uid + " is dead (Starving)");
+          logger.log("world.js - checkSimulationStatus", "survivor #" + this.survivorsInfo[i].uid + " is dead (Starving)");
+          if (this.survivorsInfo[i].isHumanControlled && this.survivorsInfo[i].isCurrentlyControlledByHuman) {
+            this.swapControlToChildren(this.survivorsInfo[i]);
+          }
+          
           this.killSurvivor(this.survivorsInfo[i]);
+          
         } else {
           this.survivorsInfo[i].consumeEnergy();
           //get old
           this.survivorsInfo[i].addLivingTime();
+          this.survivorsInfo[i].setColorByAge();
+          /*
           if (this.survivorsInfo[i].livingTime >= config.creature.adultAge) {
             this.survivorsInfo[i].sprite.tint = Constants.colors.RED;
           }
@@ -294,6 +330,7 @@ class World {
           if (this.survivorsInfo[i].livingTime >= config.creature.elderAge) {
             this.survivorsInfo[i].sprite.tint = Constants.colors.GREEN;
           }
+          */
         }
       }
     }
@@ -354,13 +391,16 @@ class World {
         PIXI: PIXI,
         dna: population[i],
         isHumanControlled: false,
+        isCurrentlyControlledByHuman : false,
         i: i,
         //sprite: survivorSprite.Init(app.screen.width, app.screen.height)
         sprite: SpriteFactory.create("SurvivorSprite", {
+            survivorTexture : this.survivorTexture,
             screenWidth: config.app.width,//app.screen.width,
             screenHeight: config.app.height,//app.screen.height,
             i: i,
-            isHumanControlled :false
+            isHumanControlled :false,
+            isCurrentlyControlledByHuman : false
           })
           .getSprite()
       }
@@ -404,7 +444,8 @@ class World {
             screenHeight: app.screen.height,
             i: this.survivorsInfo.length,
             isHumanControlled : population[i].isHumanControlled,
-            isCurrentlyControlledByHuman : population[i].isCurrentlyControlledByHuman
+            isCurrentlyControlledByHuman : false,
+            survivorTexture : this.survivorTexture
           })
           .getSprite()
       }
@@ -542,6 +583,18 @@ class World {
     }
   }
 
+  removeKilledChildren(survivor) {
+     let parent1 = this.survivorsInfo.find(o=>o.uid == survivor.parent1Uid);
+     let parent2 = this.survivorsInfo.find(o=>o.uid == survivor.parent2Uid);
+
+     if (parent1) 
+       parent1.childrens.filter(o => o !== survivor.uid)
+     
+     if (parent2) {
+      parent2.childrens.filter(o => o !== survivor.uid)
+     }
+  }
+
   /**** END LINEAGE */
 
   /**
@@ -612,8 +665,14 @@ class World {
         function(collision, dude) {
           let survivor = this.survivorsInfo.find(o => o.uid == dude.uid);
           //survivor.isDead = true;
+
+          if (survivor.isHumanControlled && survivor.isCurrentlyControlledByHuman) {
+            this.swapControlToChildren(survivor);
+          }
+
+          this.removeKilledChildren(survivor); //remove son from their parents
           this.killSurvivor(survivor);
-          logger.log("world.js - processPredator()", "survivor #" + dude.uid + " is dead (eaten)");
+          //logger.log("world.js - processPredator()", "survivor #" + dude.uid + " is dead (eaten)");
 
           //TODO: FIX this, this.survivorsInfo is not discounting
           this.predatorsInfo[i].eat();
@@ -656,10 +715,11 @@ class World {
                 if (collision != undefined) {  
                   if (!powerup.eated) {
                     powerup.eated = true;
-                    this.powerupContainer.removeChild(powerup);
                     //this.foodInfo.splice(food.idx, 1);
-                    this.powerupInfo = this.powerupInfo.filter(o => o.uid !== powerup.uid);
                     this.survivorsInfo[i].eatPowerup(powerup);
+                    this.powerupInfo = this.powerupInfo.filter(o => o.uid !== powerup.uid);
+                    this.powerupContainer.removeChild(powerup);
+                    
                     logger.log("world.js - processSurvivor()", "survivor #" + this.survivorsInfo[i].idx + " - GOT POWERUP of TYPE: " + powerup.powerUpType);
                   }
               }
@@ -688,7 +748,7 @@ class World {
                     this.foodContainer.removeChild(food);
                     //this.foodInfo.splice(food.idx, 1);
                     this.foodInfo = this.foodInfo.filter(o => o.uid !== food.uid);
-                    socket.emit('food.remove', food.uid);
+                   // socket.emit('food.remove', food.uid);
                     this.survivorsInfo[i].eat(food);
                     //console.log("survivor #" + this.survivorsInfo[i].idx + " - Comidos: " + this.survivorsInfo[i].numBugEated);
                   }
@@ -714,7 +774,6 @@ class World {
 
           //after
           if (this.survivorsInfo[i].reproductionStatus.isCopulingFinished &&
-            !this.survivorsInfo[i].reproductionStatus.isCopuling &&
             !this.survivorsInfo[i].reproductionStatus.isFindingMate) {
             //start to generate sons
             let parent2 = this.survivorsInfo.find(o => o.uid == this.survivorsInfo[i].getCurrentMate())
@@ -729,15 +788,44 @@ class World {
               logger.log("world.js - processSurvivor()", this.survivorsInfo[i].getCurrentMate() + " no encontrado");
             }
 
-            //stop copuling / reset all
-            this.survivorsInfo[i].reproductionStatus.isCopulingFinished = false;
+            //stop copuling / reset all 
+            this.survivorsInfo[i].reproductionStatus.isCopulingFinished = false; //TODO : Review esta variable
             this.survivorsInfo[i].reproductionStatus.isCopuling = false;
             this.survivorsInfo[i].reproductionStatus.isFindingMate = false;
+
+            if (parent2) {
+              parent2.reproductionStatus.isCopulingFinished = false;
+              parent2.reproductionStatus.isCopuling = false;
+              parent2.reproductionStatus.isFindingMate = false;
+            }
+
+
 
           }
         }
 
-        //find mate to reproduce
+        /*
+        //find mate for human controlled player
+        if (this.survivorsInfo[i].isHumanControlled && this.survivorsInfo[i].isCurrentlyControlledByHuman) {
+          if (!this.survivorsInfo[i].reproductionStatus.isCopuling && this.survivorsInfo[i].reproductionStatus.isFindingMate) {
+            let cr = this.survivorsInfo[i].findMate(this.survivorsInfo);
+            if (cr && cr.canReproduce) {
+              let idx = this.survivorsInfo.map(o => o.uid)
+              .indexOf(cr.partnerUid);
+
+            if (this.survivorsInfo[i].reproductionStatus.isFindingMate) {
+              this.survivorsInfo[idx].startCopuling();
+              this.survivorsInfo[i].startCopuling();
+              this.survivorsInfo[idx].setCurrentMate(this.survivorsInfo[i].uid);
+              this.survivorsInfo[i].setCurrentMate(this.survivorsInfo[idx].uid);
+            }
+            }
+          }
+            
+        }*/
+
+
+        //find mate to reproduce 
 
         if (this.survivorsInfo[i].reproductionStatus.isCopuling ||
           this.survivorsInfo[i].reproductionStatus.isFindingMate) {
@@ -747,7 +835,7 @@ class World {
 
           //check if they can reproduce
           if (cr && cr.canReproduce == true) {
-            logger.log("world.js - processSurvivor()", "PUEDE CULIAR " + cr.partnerUid);
+            //logger.log("world.js - processSurvivor()", "inicia reproduccion " + cr.partnerUid);
             //let partner = this.survivorsInfo.find(o=>o.uid == cr.partnerUid);
             //partner = true;
             let idx = this.survivorsInfo.map(o => o.uid)
@@ -870,8 +958,9 @@ class World {
 
     for (let i= 0; i<this.bestSurvivorInfo.length; i++) {
       let rem = this.bestSurvivorCointainer.removeChild(this.bestSurvivorInfo[i]);
-      if (rem)
-        logger.log("world.js - showBestSurvivor", "Child Removed : " + rem.uid);
+      if (rem) {
+        //logger.log("world.js - showBestSurvivor", "Child Removed : " + rem.uid);
+      }
     }
     
     
@@ -900,7 +989,8 @@ class World {
           screenHeight: app.screen.height,
           i: this.survivorsInfo.length,
           isHumanControlled :true,
-          isCurrentlyControlledByHuman : true
+          isCurrentlyControlledByHuman : true,
+          survivorTexture : this.survivorTexture
         })
         .getSprite()
     }
@@ -925,9 +1015,15 @@ class World {
   
   getHumanControlledSurvivor() {
     for (var i = 0; i < this.survivorsInfo.length; i++) {
-      if(this.survivorsInfo[i].isCurrentlyControlledByHuman)
+      if(this.survivorsInfo[i].isCurrentlyControlledByHuman) {
         return this.survivorsInfo[i];
+      }
+        
     }
+  }
+
+  unfollowHumanPlayer() {
+    this.viewport.fitWorld(true);
   }
 
   

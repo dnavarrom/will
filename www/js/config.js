@@ -1,8 +1,8 @@
 /* eslint-disable */
 var config = {
   app: {
-    width: 4000,
-    height: 4000,
+    width: 2000,
+    height: 2000,
     autoSize: true,
     visual: {
       bgcolor: "0X022a31"
@@ -10,14 +10,14 @@ var config = {
     highendGPU : false //to enable / disable filters that affects FPS
   },
   world: {
-    food: 300,
+    food: 150,
     predators: 3,
-    survivors: 30,
-    powerups: 5,
-    maxFoodGenerationRatio: 150,
-    maxPowerupGenerationRatio: 10,
+    survivors: 15,
+    powerups: 10,
+    maxFoodGenerationRatio: 50,
+    maxPowerupGenerationRatio: 5,
     foodRegenerationThreshold: 0.15, // % of max food to regenerate food
-    powerupRegenerationThreshold: 0.3,
+    powerupRegenerationThreshold: 0.2,
     maxFood: 500,
     maxPowerups: 10,
     maxSurvivors: 100,
@@ -36,7 +36,7 @@ var config = {
     }
   },
   creature: {
-    adultAge: 10,
+    adultAge: 1,
     elderAge: 30,
     livingTimeLimit: 60,
     minVisionRange: 50,

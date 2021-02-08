@@ -4,46 +4,50 @@ class FoodSprite extends CustomSprite {
     super(opt);
     this.appScreenWidth;
     this.appScreenHeight;
-    this.init(opt.screenWidth, opt.screenHeight, opt.i);
+    this.init(opt);
   }
 
-  init(screenWidth, screenHeight, i) {
+  init(opt) {
 
-    let graphics = new PIXI.Graphics;
+    //let graphics = new PIXI.Graphics;
     let foodTypeCode = helper.generateRandomInteger(0,2) //0 normal, 1 medium, 2 large
-    graphics.beginFill(Constants.colors.LIGHTGREY);
+    //graphics.beginFill(Constants.colors.LIGHTGREY);
 
     switch(foodTypeCode) {
       case 0:
           this.foodType = Constants.foodTypes.SMALL;
-          graphics.drawCircle(10, 10, 2);
+          this.sprite = new PIXI.Sprite(opt.foodTextures.small);
+          //graphics.drawCircle(10, 10, 2);
           break;
 
       case 1:
           this.foodType = Constants.foodTypes.MEDIUM;
-          graphics.drawCircle(10, 10, 3);
+          this.sprite = new PIXI.Sprite(opt.foodTextures.medium);
+          //graphics.drawCircle(10, 10, 3);
           break;
 
       case 2:
         this.foodType = Constants.foodTypes.LARGE;
-        graphics.drawCircle(10, 10, 4);
+        this.sprite = new PIXI.Sprite(opt.foodTextures.large);
+        //graphics.drawCircle(10, 10, 4);
         break;
 
       default:
         this.foodType = Constants.foodTypes.SMALL;
-        graphics.drawCircle(10, 10, 2);
+        this.sprite = new PIXI.Sprite(opt.foodTextures.small);
+        //graphics.drawCircle(10, 10, 2);
         break;
     }
 
-    graphics.endFill();
-    let texture = new PIXI.Texture(app.renderer.generateTexture(graphics));
-    this.sprite = new PIXI.Sprite(texture);
+    //graphics.endFill();
+    //let texture = new PIXI.Texture(app.renderer.generateTexture(graphics));
+    //this.sprite = new PIXI.Sprite(texture);
     //this.sprite = new PIXI.Sprite.fromImage('/img/star.png', true),
     //this.sprite = new PIXI.Sprite(PIXI.loader.resources["img/star.png"].texture)
-    this.appScreenWidth = screenWidth;
-    this.appScreenHeight = screenHeight;
-    this.idx = i;
-    this.sprite.idx = i;
+    this.appScreenWidth = opt.screenWidth;
+    this.appScreenHeight = opt.screenHeight;
+    this.idx = opt.i;
+    this.sprite.idx = opt.i;
     this.uid = helper.generateGuid();
     this.sprite.uid = this.uid;
     this.sprite.foodType = this.foodType;

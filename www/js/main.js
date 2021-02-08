@@ -1,15 +1,3 @@
-let loader = PIXI.loader;
-
-let b = new Bump(PIXI);
-let helper = new Helpers();
-let logger = new Logger();
-
-//Mobile device detection
-//1 = normal / 2 : retina
-let resolution = (isMobile.any == true &&
-  (isMobile.apple.phone == true ||
-    isMobile.apple.tablet == true ||
-    isMobile.apple.device == true)) ? 2 : 1;
 
 let appWidth, appHeight;
 if (config.app.autoSize) {
@@ -20,14 +8,42 @@ if (config.app.autoSize) {
   appHeight = config.app.height;
 }
 
+//Mobile device detection
+//1 = normal / 2 : retina
+let resolution = (isMobile.any == true &&
+  (isMobile.apple.phone == true ||
+    isMobile.apple.tablet == true ||
+    isMobile.apple.device == true)) ? 2 : 1;
+
+
+
 var app = new PIXI.Application({
   width: appWidth, //config.app.width, //800,//1600,
   height: appHeight, //config.app.height, //600,//900,
   antialias: true, // default: false
-  transparent: false, // default: false
+  transparent: true, // default: false
   resolution: resolution, // default: 1
   autoResize: true
 });
+
+/*
+app.renderer = PIXI.autoDetectRenderer({
+  width: appWidth,
+  height: appHeight,
+  antialias: true,
+  transparent: true,
+  resolution: resolution,
+  autoResize:true
+});
+*/
+
+console.log("WebGL Supported by browser? : " + PIXI.utils.isWebGLSupported()); //true
+
+let loader = PIXI.loader;
+
+let b = new Bump(PIXI);
+let helper = new Helpers();
+let logger = new Logger();
 
 
 //app.renderer.autoResize = true;
@@ -91,12 +107,14 @@ loader
  */
 function setup() {
 
-  let texture = PIXI.loader.resources["img/background-11.png"].texture;
+  let texture = loader.resources["img/background-11.png"].texture;
   tilingSprite = new PIXI.extras.TilingSprite(
     texture,
     app.screen.width,
     app.screen.height
   );
+
+  
 
   app.stage.addChild(tilingSprite);
 
@@ -254,6 +272,8 @@ function run(delta) {
     //TODO: optimize to check state machine before querying world to get human controlled survivor.
     //update player information (score / energy)
     let playerStatus = world.getHumanControlledSurvivor();
+    
+
     //if there is no human controlled player, this should be undefined
     if (playerStatus) {
       if (playerInformation.isVisible() == false) {
@@ -261,6 +281,10 @@ function run(delta) {
       }
       playerInformation.updateUi(playerStatus);
     }
+    else
+      { 
+        playerInformation.hideScene();
+      }
   
 
   //move background

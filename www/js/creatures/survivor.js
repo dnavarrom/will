@@ -182,7 +182,8 @@ class Survivor extends Creature {
   move() {
 
     if (!this.reproductionStatus.isCopuling) {
-      if (this.isHumanControlled && this.mouseTargetX && this.mouseTargetY) {
+      if (this.isHumanControlled && this.isCurrentlyControlledByHuman && this.mouseTargetX && this.mouseTargetY) { 
+
         //let mousePosition = app.renderer.plugins.interaction.mouse.global;
         //let mousePosition = app.renderer.plugins.interaction.mouse.originalEvent;
 
@@ -250,7 +251,9 @@ class Survivor extends Creature {
         this.reproductionStatus.isCopuling = true;
         this.reproductionStatus.isFindingMate = false;
         this.reproductionStatus.isCopulingFinished = false;
-        this.sprite.tint = Constants.colors.BLUE;
+        if (this.isHumanControlled == false) {
+          this.sprite.tint = Constants.colors.BLUE;
+        }
       } else {
         this.reproductionStatus.isCopulingFinished = true;
         this.reproductionStatus.isCopuling = false;
@@ -280,13 +283,17 @@ class Survivor extends Creature {
     }
   }
 
+
   /**
    * 
    */
   findMate(survivorInfo) {
 
+    /*
     if (this.isHumanControlled)
       return;
+
+    */
 
     var nearestSurvivorUid = -1;
     var nearestSurvivorDistance = 1000;
@@ -349,10 +356,17 @@ class Survivor extends Creature {
 
           }
         } else {
+          if (this.isHumanControlled == false && this.isCurrentlyControlledByHuman == false) {
           this.nearestSurvivorDistance = nearestSurvivorDistance;
           this.nearestSurvivorUid = nearestSurvivorUid;
           this.setDirection(angle);
           //this.reproductionStatus.isCopuling = false;
+          }
+          else
+          {
+            this.nearestSurvivorDistance = nearestSurvivorDistance;
+            this.nearestSurvivorUid = nearestSurvivorUid;
+          }
 
         }
 
@@ -394,7 +408,7 @@ class Survivor extends Creature {
       return false;
     }
 
-    //if fertility of both is ok 
+    //if fertility of both is ok ( > 0.3)
     if (this.fertility < 0.3) {
       return false;
     }

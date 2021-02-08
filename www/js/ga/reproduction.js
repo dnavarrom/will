@@ -25,11 +25,14 @@ class Reproduction {
       this.Mutate();
     }
 
-    console.log("Child Chromosome");
-    console.log(this.child);
+    
 
     this.child.parent1Uid = this.parent1.uid;
     this.child.parent2Uid = this.parent2.uid;
+
+    console.log("Child Chromosome");
+    console.log(this.child);
+    
     return this.child;
 
   }

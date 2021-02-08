@@ -70,6 +70,10 @@ class Creature {
     //counters
     this.reproductionTimer = 0;
 
+    //parents
+    this.parent1Uid = opt.dna.parent1Uid !== undefined ? opt.dna.parent1Uid : -1;
+    this.parent2Uid = opt.dna.parent2Uid !== undefined ? opt.dna.parent2Uid : -1;
+
     //mates & childrens
     this.mates = []; //uid array  (not object)
     this.childrens = []; //uid array (not object)

@@ -32,7 +32,8 @@ class PlayerInformation {
         energy: -1,
         score : -1,
         childrens: -1,
-        age : -1
+        age : -1,
+        fertility : -1
       };
   
       //this.uiTextInfo.x = app.screen.width / 2;
@@ -91,11 +92,13 @@ class PlayerInformation {
         this.currentDisplay.score = data.numBugEated;
         this.currentDisplay.childrens = data.childrens.length;
         this.currentDisplay.age = data.livingTime;
+        this.currentDisplay.fertility = data.fertility;
 
         this.uiTextInfo.text = "-- Player Status -- \n Score: " + this.currentDisplay.score + " \n" +
                                "Age: " + helper.round(this.currentDisplay.age,2) + " \n " +
                                "Childrens: " + this.currentDisplay.childrens + " \n" + 
-                               "Speed: " + this.currentDisplay.speed;
+                               "Speed: " + helper.round(this.currentDisplay.speed,2) + "\n" +
+                               "Fertility: " + this.currentDisplay.fertility;
 
         }
 
